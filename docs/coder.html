@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Avançado de HTML</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2d2d2d;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-color: #8a2be2;
+            --accent-hover: #7b1fa2;
+            --border-color: #333;
+            --success-color: #4caf50;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+            --info-color: #2196F3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 0;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+        }
+
+        .editor-panel, .preview-panel {
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .editor-panel {
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .preview-panel {
+            background-color: var(--bg-primary);
+        }
+
+        h1, h2 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            border-radius: 4px;
+            resize: none;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        button.success {
+            background-color: var(--success-color);
+        }
+
+        button.danger {
+            background-color: var(--danger-color);
+        }
+
+        button.warning {
+            background-color: var(--warning-color);
+        }
+
+        button.info {
+            background-color: var(--info-color);
+        }
+
+        .html-element {
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .html-element:hover {
+            border-color: var(--accent-color);
+        }
+
+        .element-header {
+            background-color: var(--bg-tertiary);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .element-header:hover {
+            background-color: rgba(138, 43, 226, 0.1);
+        }
+
+        .element-tag {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .element-actions button {
+            padding: 5px 10px;
+            margin-left: 5px;
+            font-size: 12px;
+        }
+
+        .element-content {
+            padding: 15px;
+            background-color: var(--bg-secondary);
+        }
+
+        .element-preview {
+            pointer-events: none;
+        }
+
+        .element-edit {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .element-edit textarea {
+            min-height: 100px;
+            font-size: 13px;
+        }
+
+        .html-element.editing .element-edit {
+            display: block;
+        }
+
+        .html-element.editing .element-preview {
+            display: none;
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-tertiary);
+            padding: 8px 15px;
+            border-top: 1px solid var(--border-color);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .element-count {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--success-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .global-actions {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            
+            .editor-panel, .preview-panel {
+                height: 50vh;
+            }
+            
+            .editor-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-panel">
+        <h1>Editor HTML</h1>
+        <textarea id="html-input" placeholder="Cole seu código HTML aqui..."></textarea>
+        <div>
+            <button id="process-btn">Processar HTML</button>
+            <button id="clear-btn" class="danger">Limpar</button>
+            <button id="load-example-btn" class="warning">Carregar Exemplo</button>
+        </div>
+    </div>
+    
+    <div class="preview-panel">
+        <h1>Visualização</h1>
+        <div id="html-preview"></div>
+        
+        <div class="global-actions">
+            <button id="copy-full-html-btn" class="info">Copy Full HTML</button>
+            <button id="copy-json-btn" class="info">Copy JSON</button>
+        </div>
+    </div>
+    
+    <div class="status-bar">
+        <span>Editor Avançado de HTML</span>
+        <span class="element-count">0 elementos</span>
+    </div>
+    
+    <div class="notification" id="notification">Copiado para área de transferência!</div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos DOM
+            const htmlInput = document.getElementById('html-input');
+            const processBtn = document.getElementById('process-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const loadExampleBtn = document.getElementById('load-example-btn');
+            const htmlPreview = document.getElementById('html-preview');
+            const elementCount = document.querySelector('.element-count');
+            const notification = document.getElementById('notification');
+            const copyFullHtmlBtn = document.getElementById('copy-full-html-btn');
+            const copyJsonBtn = document.getElementById('copy-json-btn');
+            
+            // HTML de exemplo
+            const exampleHtml = `<p style="border-left: clamp(0.3rem, 0.8vw, 0.5rem) solid #8a2be2; padding: clamp(1rem, 2vw, 1.3rem); margin-bottom: clamp(1.5rem, 3vw, 2rem);">
+  <i class="fas fa-skull" style="color: #ff5555; font-size: clamp(1.2rem, 2.5vw, 1.6rem); margin-right: 0.5em;"></i>
+  <span style="font-size: clamp(1.3rem, 2.8vw, 1.8rem); font-weight: bold; color: #8a2be2;">Vorathis, o Devorador de Ecos</span>
+  <span style="display: block; font-size: clamp(0.8rem, 1.5vw, 1rem); color: #777; margin-top: 0.3em;">
+    <i class="fas fa-tag"></i> Classificação B | Cc 150,100 | Predador Sonoro
+  </span>
+</p>
+
+<!-- Seção 1: Identificação Básica -->
+<p style="margin-bottom: clamp(1.5rem, 3vw, 2rem);">
+  <i class="fas fa-map-marked-alt" style="color: #ff6b6b; width: clamp(1.2rem, 2.5vw, 1.6rem); margin-right: 0.5em;"></i>
+  <strong>Origem Geográfica:</strong> Vale do Sussurro Morto (Oeste de Reign) - Planalto rochoso com fendas de ossos petrificados. Tempestades de mana roxa transformam a areia em vidro, criando campos de obsidiana natural que amplificam sons paranormais.
+</p>
+
+<!-- Seção 2: Biologia Anômala -->
+<p style="margin-bottom: clamp(1.5rem, 3vw, 2rem);">
+  <i class="fas fa-dna" style="color: #9bc53d; width: clamp(1.2rem, 2.5vw, 1.6rem); margin-right: 0.5em;"></i>
+  <strong>Estrutura Genética:</strong>
+  <br><br>
+  • <strong>Base Humanoide:</strong> Corpo de prisioneiro da Ordem do Silêncio submetido a 40 semanas de banho alquímico em néctar de sombra
+  <br>
+  • <strong>Traços de Louva-a-deus:</strong> Membros anteriores modificados com quitina reforçada vibracional (corte sônico)
+  <br>
+  • <strong>Infusão Espiritual:</strong> Espírito de Eco implantado na cavidade torácica como "motor" de absorção acústica
+</p>`;
+            
+            // Event listeners
+            processBtn.addEventListener('click', processHtml);
+            clearBtn.addEventListener('click', clearEditor);
+            loadExampleBtn.addEventListener('click', loadExample);
+            copyFullHtmlBtn.addEventListener('click', copyFullHtml);
+            copyJsonBtn.addEventListener('click', copyJson);
+            
+            // Função para processar o HTML
+            function processHtml() {
+                const html = htmlInput.value.trim();
+                if (!html) return;
+                
+                // Cria um elemento temporário para parsear o HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                
+                // Limpa a visualização anterior
+                htmlPreview.innerHTML = '';
+                
+                // Processa cada elemento filho
+                const elements = tempDiv.children;
+                for (let i = 0; i < elements.length; i++) {
+                    const element = elements[i];
+                    createElementCard(element, i);
+                }
+                
+                // Atualiza o contador de elementos
+                updateElementCount();
+                
+                showNotification('HTML processado com sucesso!');
+            }
+            
+            // Função para criar um cartão de elemento editável
+            function createElementCard(element, index) {
+                const elementCard = document.createElement('div');
+                elementCard.className = 'html-element';
+                
+                // Extrai o nome da tag
+                const tagName = element.tagName.toLowerCase();
+                
+                // Cria o cabeçalho do elemento
+                const header = document.createElement('div');
+                header.className = 'element-header';
+                
+                const tagSpan = document.createElement('span');
+                tagSpan.className = 'element-tag';
+                tagSpan.textContent = `<${tagName}>`;
+                
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'element-actions';
+                
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Editar';
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    elementCard.classList.toggle('editing');
+                });
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.textContent = 'Copiar';
+                copyBtn.className = 'success';
+                copyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    copyToClipboard(element.outerHTML);
+                    showNotification('Elemento copiado!');
+                });
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Remover';
+                deleteBtn.className = 'danger';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm('Tem certeza que deseja remover este elemento?')) {
+                        elementCard.remove();
+                        updateElementCount();
+                    }
+                });
+                
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(copyBtn);
+                actionsDiv.appendChild(deleteBtn);
+                
+                header.appendChild(tagSpan);
+                header.appendChild(actionsDiv);
+                
+                // Cria o conteúdo do elemento
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'element-content';
+                
+                // Visualização do elemento
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'element-preview';
+                previewDiv.appendChild(element.cloneNode(true));
+                
+                // Área de edição
+                const editDiv = document.createElement('div');
+                editDiv.className = 'element-edit';
+                
+                const editTextarea = document.createElement('textarea');
+                editTextarea.value = element.outerHTML;
+                
+                const saveBtn = document.createElement('button');
+                saveBtn.textContent = 'Salvar';
+                saveBtn.className = 'success';
+                saveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const newElement = document.createElement('div');
+                    newElement.innerHTML = editTextarea.value;
+                    
+                    if (newElement.firstChild) {
+                        previewDiv.innerHTML = '';
+                        previewDiv.appendChild(newElement.firstChild.cloneNode(true));
+                        elementCard.classList.remove('editing');
+                        showNotification('Alterações salvas!');
+                    } else {
+                        alert('HTML inválido!');
+                    }
+                });
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.textContent = 'Cancelar';
+                cancelBtn.className = 'danger';
+                cancelBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    elementCard.classList.remove('editing');
+                });
+                
+                editDiv.appendChild(editTextarea);
+                editDiv.appendChild(saveBtn);
+                editDiv.appendChild(cancelBtn);
+                
+                contentDiv.appendChild(previewDiv);
+                contentDiv.appendChild(editDiv);
+                
+                elementCard.appendChild(header);
+                elementCard.appendChild(contentDiv);
+                
+                htmlPreview.appendChild(elementCard);
+            }
+            
+            // Função para copiar o HTML completo
+            function copyFullHtml() {
+                const elements = document.querySelectorAll('.element-preview');
+                let fullHtml = '';
+                
+                elements.forEach(el => {
+                    fullHtml += el.innerHTML + '\n';
+                });
+                
+                copyToClipboard(fullHtml.trim());
+                showNotification('HTML completo copiado!');
+            }
+            
+            // Função para copiar como JSON
+            function copyJson() {
+                const elements = document.querySelectorAll('.element-preview');
+                let fullHtml = '';
+                
+                elements.forEach(el => {
+                    fullHtml += el.innerHTML + '\n';
+                });
+                
+                // Prepara para JSON (remove quebras de linha e escapa aspas)
+                const jsonContent = fullHtml.trim()
+                    .replace(/\n/g, '\\n')  // Preserva quebras de linha como \n
+                    .replace(/"/g, '\\"')  // Escapa aspas
+                    .replace(/\t/g, '\\t'); // Escapa tabs
+                
+                copyToClipboard(jsonContent);
+                showNotification('Conteúdo copiado como JSON!');
+            }
+            
+            // Função para limpar o editor
+            function clearEditor() {
+                if (confirm('Tem certeza que deseja limpar o editor?')) {
+                    htmlInput.value = '';
+                    htmlPreview.innerHTML = '';
+                    updateElementCount();
+                }
+            }
+            
+            // Função para carregar o exemplo
+            function loadExample() {
+                if (htmlInput.value && !confirm('Isso substituirá o conteúdo atual. Continuar?')) {
+                    return;
+                }
+                htmlInput.value = exampleHtml;
+                showNotification('Exemplo carregado!');
+            }
+            
+            // Função para copiar texto para a área de transferência
+            function copyToClipboard(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+            
+            // Função para mostrar notificação
+            function showNotification(message) {
+                notification.textContent = message;
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Função para atualizar o contador de elementos
+            function updateElementCount() {
+                const count = document.querySelectorAll('.html-element').length;
+                elementCount.textContent = `${count} elementos`;
+            }
+        });
+    </script>
+</body>
+</html>

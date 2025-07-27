@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roggy World - Sistema Completo de RPG</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variáveis e Reset */
+        :root {
+            --dark-bg: #0a0a12;
+            --darker-bg: #06060b;
+            --accent-gold: #d4af37;
+            --accent-purple: #5a0d9d;
+            --accent-blue: #1a7fc9;
+            --text-light: #f0f0f0;
+            --text-muted: #b0b0b0;
+            --transition-speed: 0.4s;
+            --header-height: 70px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            opacity: 0;
+            animation: fadeIn 1s ease-in forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        /* Header Moderno */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: rgba(10, 10, 18, 0.95);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            height: var(--header-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 clamp(1rem, 3vw, 3rem);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: transform var(--transition-speed) ease;
+            gap: 0.8rem;
+        }
+        
+        .logo-container:hover {
+            transform: translateX(5px);
+        }
+        
+        .logo-icon {
+            font-size: 1.8rem;
+            color: var(--accent-gold);
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .logo-text {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            font-weight: 500;
+            color: var(--text-light);
+            letter-spacing: 1px;
+        }
+        
+        /* Navegação */
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: clamp(0.5rem, 2vw, 1.5rem);
+        }
+        
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 400;
+            font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+            padding: 0.5rem 0;
+            position: relative;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        nav a:hover, nav a:focus {
+            color: var(--accent-gold);
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: var(--accent-gold);
+            transition: width var(--transition-speed) ease;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Botão de Ajuda */
+        .help-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            margin-left: 1rem;
+            padding: 0.5rem;
+        }
+        
+        .help-btn:hover {
+            color: var(--accent-gold);
+            transform: rotate(15deg);
+        }
+        
+        /* Popup de Ajuda */
+        .help-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background-color: var(--darker-bg);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 6px;
+            padding: 1.5rem;
+            max-width: 90%;
+            width: 500px;
+            z-index: 2000;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .help-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        
+        .help-popup h2 {
+            color: var(--accent-gold);
+            font-family: 'Cinzel', serif;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .help-popup p {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+        
+        .help-popup ul {
+            margin-left: 1.2rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .help-popup li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .close-popup {
+            position: absolute;
+            top: 0.8rem;
+            right: 0.8rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: color var(--transition-speed) ease;
+        }
+        
+        .close-popup:hover {
+            color: var(--accent-gold);
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            width: 100%;
+            height: clamp(300px, 50vh, 500px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 1.5rem;
+            overflow: hidden;
+        }
+        
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1542272201-b1ca555f8505?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1587&q=80');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            opacity: 0.7;
+        }
+        
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, var(--dark-bg));
+            z-index: 1;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 0.3s forwards;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 1rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+            letter-spacing: 1.5px;
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+            line-height: 1.7;
+        }
+        
+        .hero-description {
+            font-size: clamp(0.9rem, 1.8vw, 1rem);
+            color: var(--text-light);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.6s forwards;
+        }
+        
+        /* Seção de Recursos */
+        .features-section {
+            padding: 4rem clamp(1rem, 5vw, 3rem);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            margin-bottom: 3rem;
+            color: var(--accent-gold);
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .section-subtitle {
+            font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            line-height: 1.7;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background: linear-gradient(to bottom, rgba(10, 10, 18, 0.8), rgba(6, 6, 11, 0.9));
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+            opacity: 0;
+            transform: translateY(30px);
+            cursor: pointer;
+        }
+        
+        .feature-card:nth-child(1) { animation: fadeInUp 0.8s ease-out 0.3s forwards; }
+        .feature-card:nth-child(2) { animation: fadeInUp 0.8s ease-out 0.5s forwards; }
+        .feature-card:nth-child(3) { animation: fadeInUp 0.8s ease-out 0.7s forwards; }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-image {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .feature-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(to bottom, transparent, rgba(6, 6, 11, 0.9));
+        }
+        
+        .feature-content {
+            padding: 1.5rem;
+        }
+        
+        .feature-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+        
+        .feature-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-details {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-details i {
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+        }
+        
+        /* Seção de Feedback */
+        .feedback-section {
+            padding: 3rem clamp(1rem, 5vw, 3rem);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        /* Rodapé */
+        footer {
+            background-color: var(--darker-bg);
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .social-link {
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            transition: all var(--transition-speed) ease;
+            cursor: pointer;
+        }
+        
+        .social-link:hover {
+            color: var(--accent-gold);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        /* Popup de Loading */
+        .loading-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background-color: var(--darker-bg);
+            border: 1px solid var(--accent-gold);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 90%;
+            width: 300px;
+            z-index: 2500;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .loading-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .loading-title {
+            font-family: 'Cinzel', serif;
+            color: var(--accent-gold);
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .loading-animation {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .loading-animation::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 40px;
+            margin: 8px;
+            border-radius: 50%;
+            border: 4px solid var(--accent-gold);
+            border-color: var(--accent-gold) transparent var(--accent-gold) transparent;
+            animation: loading-spin 1.2s linear infinite;
+        }
+        
+        @keyframes loading-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-message {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        /* Popup de Erro */
+        .error-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background-color: var(--darker-bg);
+            border: 1px solid #d9534f;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 90%;
+            width: 300px;
+            z-index: 2500;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .error-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .error-icon {
+            color: #d9534f;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .error-title {
+            font-family: 'Cinzel', serif;
+            color: #d9534f;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .error-message {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .error-btn {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .error-btn:hover {
+            background-color: #c9302c;
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            header {
+                flex-wrap: wrap;
+                height: auto;
+                padding: 1rem;
+            }
+            
+            nav {
+                order: 3;
+                width: 100%;
+                margin-top: 1rem;
+            }
+            
+            nav ul {
+                justify-content: space-around;
+            }
+            
+            .help-btn {
+                margin-left: auto;
+            }
+            
+            .hero-section {
+                height: 60vh;
+            }
+        }
+        
+        /* Animações */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Scroll Behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body.scroll-locked {
+            overflow: hidden;
+        }
+        
+        /* Disqus Container */
+        #disqus_thread {
+            margin-top: 2rem;
+            background: rgba(10, 10, 18, 0.6);
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header>
+        <div class="logo-container" id="logo">
+            <i class="fas fa-dice-d20 logo-icon floating"></i>
+            <span class="logo-text">Roggy World</span>
+        </div>
+        
+        <nav>
+            <ul>
+                <li><a href="./Monsters.html" class="nav-link">Bestiário</a></li>
+                <li><a href="#maps" class="nav-link">Mapas</a></li>
+                <li><a href="#weapons" class="nav-link">Armas</a></li>
+                <li><a href="#tools" class="nav-link">Ferramentas</a></li>
+            </ul>
+        </nav>
+        
+        <button class="help-btn" id="helpBtn" aria-label="Ajuda">
+            <i class="fas fa-info-circle"></i>
+        </button>
+    </header>
+    
+    <!-- Overlay e Popup de Ajuda -->
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="help-popup" id="helpPopup">
+        <button class="close-popup" id="closePopup" aria-label="Fechar">&times;</button>
+        <h2>Guia Rápido</h2>
+        <p>Explore o Roggy World com estas ferramentas:</p>
+        
+        <ul>
+            <li><strong>Bestiário:</strong> Catálogo completo de criaturas e monstros para suas aventuras</li>
+            <li><strong>Mapas:</strong> Visualização interativa de cenários e dungeons</li>
+            <li><strong>Armas:</strong> Arsenal detalhado para equipar seus personagens</li>
+            <li><strong>Ferramentas:</strong> Geradores de NPCs, tesouros e utilitários para RPG</li>
+        </ul>
+        
+        <p>Navegue pelo menu superior para acessar todas as funcionalidades do sistema.</p>
+    </div>
+    
+    <!-- Popup de Loading -->
+    <div class="loading-popup" id="loadingPopup">
+        <div class="loading-animation"></div>
+        <h3 class="loading-title">Carregando</h3>
+        <p class="loading-message">Preparando sua jornada...</p>
+    </div>
+    
+    <!-- Popup de Erro -->
+    <div class="error-popup" id="errorPopup">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="error-title">Falha na Requisição</h3>
+        <p class="error-message">Não foi possível acessar este recurso no momento.</p>
+        <button class="error-btn" id="errorBtn">Entendido</button>
+    </div>
+    
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Roggy World</h1>
+            <p class="hero-subtitle">Seu sistema completo para aventuras épicas de RPG</p>
+            <p class="hero-description">
+                Roggy World é uma plataforma integrada para mestres e jogadores de RPG, oferecendo ferramentas intuitivas, 
+                conteúdo expansível e um sistema flexível para criar e gerenciar suas campanhas. Desde a criação de personagens 
+                até a construção de mundos inteiros, temos tudo que você precisa para suas aventuras.
+            </p>
+        </div>
+    </section>
+    
+    <!-- Seção de Recursos -->
+    <section class="features-section">
+        <h2 class="section-title">Explore Nossos Recursos</h2>
+        <p class="section-subtitle">
+            Descubra todas as ferramentas que preparamos para tornar suas sessões de RPG mais imersivas e organizadas
+        </p>
+        
+        <div class="features-grid">
+            <div class="feature-card" data-target="./Monsters.html">
+                <div class="feature-image" style="background-image: url('https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80');"></div>
+                <div class="feature-content">
+                    <h3 class="feature-title">Bestiário Completo</h3>
+                    <p class="feature-description">
+                        Acesse nosso extenso catálogo de criaturas, monstros e NPCs, cada um com estatísticas detalhadas, 
+                        comportamentos táticos e informações de lore para enriquecer suas aventuras.
+                    </p>
+                    <div class="feature-details">
+                        <i class="fas fa-dragon"></i>
+                        <span>500+ criaturas disponíveis</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="feature-card" data-target="#maps">
+                <div class="feature-image" style="background-image: url('https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1476&q=80');"></div>
+                <div class="feature-content">
+                    <h3 class="feature-title">Mapas Interativos</h3>
+                    <p class="feature-description">
+                        Crie e explore mapas detalhados com camadas de informação, pontos de interesse e ferramentas de 
+                        descoberta progressiva para revelar o cenário conforme seus jogadores exploram.
+                    </p>
+                    <div class="feature-details">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <span>Diversos estilos e biomas</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="feature-card" data-target="#weapons">
+                <div class="feature-image" style="background-image: url('https://images.unsplash.com/photo-1584735422186-35a666a33284?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1476&q=80');"></div>
+                <div class="feature-content">
+                    <h3 class="feature-title">Arsenal Completo</h3>
+                    <p class="feature-description">
+                        Armas, armaduras e equipamentos mágicos com sistemas de criação, personalização e balanceamento 
+                        para garantir combates emocionantes e equilibrados.
+                    </p>
+                    <div class="feature-details">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>1000+ itens catalogados</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Seção de Feedback -->
+    <section class="feedback-section">
+        <h2 class="section-title">Compartilhe Sua Experiência</h2>
+        <p class="section-subtitle">
+            Sua opinião nos ajuda a melhorar o Roggy World. Deixe seu feedback, sugestões ou reporte problemas.
+        </p>
+        
+        <div id="disqus_thread"></div>
+    </section>
+    
+    <!-- Rodapé -->
+    <footer>
+        <div class="social-links">
+            <a href="https://github.com/seu-usuario/roggy-world" class="social-link" id="githubLink" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="https://discord.gg/seu-link" class="social-link" id="discordLink" target="_blank" rel="noopener noreferrer" aria-label="Discord">
+                <i class="fab fa-discord"></i>
+            </a>
+        </div>
+        <p class="copyright">© 2025 Reign Of Rpg's · Todos os direitos reservados</p>
+    </footer>
+    
+    <script>
+        // Função para rolar suavemente para o topo com animação do dado
+        function scrollToTop() {
+            const diceIcon = document.querySelector('.logo-icon');
+            const startTime = performance.now();
+            const duration = 800; // 0.8 segundos
+            const startPosition = window.scrollY;
+            const targetPosition = 0;
+            
+            // Remove a animação de flutuação e inicia a rotação
+            diceIcon.classList.remove('floating');
+            diceIcon.style.transform = 'rotate(0deg)';
+            diceIcon.style.transition = 'transform 0.1s linear';
+            
+            // Bloqueia o scroll durante a animação
+            document.body.classList.add('scroll-locked');
+            
+            function animateScroll(currentTime) {
+                const elapsedTime = currentTime - startTime;
+                const progress = Math.min(elapsedTime / duration, 1);
+                const easeProgress = easeInOutCubic(progress);
+                
+                // Atualiza a posição do scroll
+                window.scrollTo(0, startPosition - (startPosition * easeProgress));
+                
+                // Atualiza a rotação do dado (mais rápido no início, desacelerando)
+                const rotationSpeed = 1440 * (1 - easeProgress); // Diminui a velocidade conforme progride
+                diceIcon.style.transform = `rotate(${rotationSpeed}deg)`;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                } else {
+                    // Completa a animação
+                    diceIcon.style.transition = 'transform 0.5s ease-out';
+                    diceIcon.style.transform = 'rotate(0deg)';
+                    
+                    // Restaura a animação de flutuação após um pequeno delay
+                    setTimeout(() => {
+                        diceIcon.classList.add('floating');
+                        document.body.classList.remove('scroll-locked');
+                    }, 500);
+                }
+            }
+            
+            function easeInOutCubic(t) {
+                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+            
+            requestAnimationFrame(animateScroll);
+        }
+        
+        // Função para simular redirecionamento com loading
+        function simulateRedirect(targetUrl, element) {
+            const loadingPopup = document.getElementById('loadingPopup');
+            const overlay = document.getElementById('overlay');
+            
+            // Mostra o popup de loading
+            loadingPopup.classList.add('show');
+            overlay.classList.add('show');
+            document.body.classList.add('scroll-locked');
+            
+            // Tempo aleatório entre 2 e 5 segundos
+            const delay = 2000 + Math.random() * 3000;
+            
+            // Simula o carregamento
+            setTimeout(() => {
+                // 90% de chance de sucesso, 10% de erro (para demonstração)
+                const success = Math.random() > 0.1;
+                
+                if (success) {
+                    if (element.target) {
+                        // Se for um link externo, abre em nova aba
+                        window.open(targetUrl, '_blank');
+                    } else {
+                        // Se for um link interno, redireciona
+                        window.location.href = targetUrl;
+                    }
+                } else {
+                    // Mostra popup de erro
+                    showErrorPopup();
+                }
+                
+                // Esconde o popup de loading
+                loadingPopup.classList.remove('show');
+                overlay.classList.remove('show');
+                document.body.classList.remove('scroll-locked');
+            }, delay);
+        }
+        
+        // Mostra popup de erro
+        function showErrorPopup() {
+            const errorPopup = document.getElementById('errorPopup');
+            const overlay = document.getElementById('overlay');
+            
+            errorPopup.classList.add('show');
+            overlay.classList.add('show');
+            document.body.classList.add('scroll-locked');
+        }
+        
+        // Fecha popup de erro
+        function hideErrorPopup() {
+            const errorPopup = document.getElementById('errorPopup');
+            const overlay = document.getElementById('overlay');
+            
+            errorPopup.classList.remove('show');
+            overlay.classList.remove('show');
+            document.body.classList.remove('scroll-locked');
+        }
+        
+        // Configura manipuladores de eventos
+        function setupEventListeners() {
+            // Logo - scroll to top
+            document.getElementById('logo').addEventListener('click', scrollToTop);
+            
+            // Links de navegação
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = link.getAttribute('href');
+                    simulateRedirect(target, e);
+                });
+            });
+            
+            // Cards de recursos
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const target = card.getAttribute('data-target');
+                    simulateRedirect(target, e);
+                });
+            });
+            
+            // Links sociais
+            document.getElementById('githubLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = e.currentTarget.getAttribute('href');
+                simulateRedirect(target, e);
+            });
+            
+            document.getElementById('discordLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = e.currentTarget.getAttribute('href');
+                simulateRedirect(target, e);
+            });
+            
+            // Popup de ajuda
+            const helpBtn = document.getElementById('helpBtn');
+            const helpPopup = document.getElementById('helpPopup');
+            const closePopup = document.getElementById('closePopup');
+            const overlay = document.getElementById('overlay');
+            
+            helpBtn.addEventListener('click', () => {
+                helpPopup.classList.add('show');
+                overlay.classList.add('show');
+                document.body.classList.add('scroll-locked');
+            });
+            
+            closePopup.addEventListener('click', () => {
+                helpPopup.classList.remove('show');
+                overlay.classList.remove('show');
+                document.body.classList.remove('scroll-locked');
+            });
+            
+            overlay.addEventListener('click', () => {
+                helpPopup.classList.remove('show');
+                overlay.classList.remove('show');
+                document.body.classList.remove('scroll-locked');
+            });
+            
+            // Popup de erro
+            document.getElementById('errorBtn').addEventListener('click', hideErrorPopup);
+            
+            // Fechar com ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    helpPopup.classList.remove('show');
+                    document.getElementById('errorPopup').classList.remove('show');
+                    overlay.classList.remove('show');
+                    document.body.classList.remove('scroll-locked');
+                }
+            });
+        }
+        
+        // Carregar Disqus quando a seção estiver visível
+        function loadDisqusWhenVisible() {
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    // Configuração do Disqus
+                    var disqus_config = function () {
+                        this.page.url = window.location.href;
+                        this.page.identifier = 'Roggy World';
+                    };
+                    
+                    (function() {
+                        var d = document, s = d.createElement('script');
+                        s.src = 'https://reignofrpgs.disqus.com/embed.js';
+                        s.setAttribute('data-timestamp', +new Date());
+                        (d.head || d.body).appendChild(s);
+                    })();
+                    
+                    observer.disconnect();
+                }
+            }, { threshold: 0.1 });
+            
+            observer.observe(document.querySelector('#disqus_thread'));
+        }
+        
+        // Animar cards quando entram na viewport
+        function animateOnScroll() {
+            const featureCards = document.querySelectorAll('.feature-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            featureCards.forEach(card => {
+                observer.observe(card);
+            });
+        }
+        
+        // Inicialização quando o DOM estiver carregado
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            animateOnScroll();
+            loadDisqusWhenVisible();
+            
+            // Efeito parallax no hero background
+            const heroBg = document.querySelector('.hero-bg');
+            window.addEventListener('scroll', () => {
+                const scrollPosition = window.scrollY;
+                heroBg.style.transform = `translateY(${scrollPosition * 0.3}px)`;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roggy World - Bestiário</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variáveis e Reset */
+        :root {
+            --dark-bg: #0a0a0a;
+            --darker-bg: #050505;
+            --accent-gold: #d4af37;
+            --accent-red: #c62828;
+            --accent-blue: #1a7fc9;
+            --text-light: #f0f0f0;
+            --text-muted: #b0b0b0;
+            --text-gold: #d4af37;
+            --transition-speed: 0.4s;
+            --header-height: clamp(4rem, 8vw, 5rem);
+            --popup-width: clamp(20rem, 80vw, 75rem);
+            --popup-height: 80vh;
+            --monster-card-width: clamp(15.625rem, 30vw, 21.875rem);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Particle Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            background-color: rgba(212, 175, 55, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: linear-gradient(to right, #0a0a0a, #1a1a1a, #0a0a0a);
+            backdrop-filter: blur(0.5rem);
+            -webkit-backdrop-filter: blur(0.5rem);
+            height: var(--header-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 clamp(1rem, 5vw, 4rem);
+            border-bottom: 0.125rem solid var(--accent-gold);
+            box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.5);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: transform var(--transition-speed) ease;
+            gap: clamp(0.5rem, 1vw, 1rem);
+            text-decoration: none;
+        }
+        
+        .logo-container:hover {
+            transform: translateX(0.3125rem);
+        }
+        
+        .logo-icon {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            color: var(--accent-gold);
+            text-shadow: 0 0 0.625rem rgba(212, 175, 55, 0.7);
+        }
+        
+        .logo-text {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.3rem, 2.5vw, 2rem);
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 0.0625rem;
+            text-shadow: 0.0625rem 0.0625rem 0.1875rem rgba(0, 0, 0, 0.8);
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: clamp(1rem, 2vw, 2rem);
+        }
+        
+        .search-container {
+            position: relative;
+            width: clamp(6.25rem, 20vw, 15.625rem);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: clamp(0.4rem, 0.8vw, 0.6rem) clamp(0.8rem, 1.5vw, 1.2rem);
+            border-radius: 1.875rem;
+            border: 0.0625rem solid var(--accent-gold);
+            background: rgba(20, 20, 20, 0.8);
+            color: var(--text-light);
+            font-size: clamp(0.8rem, 1.2vw, 1rem);
+            transition: all var(--transition-speed) ease;
+            padding-left: clamp(2rem, 3.5vw, 2.5rem);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0.625rem rgba(212, 175, 55, 0.3);
+            background: rgba(30, 30, 30, 0.9);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: clamp(0.8rem, 1.5vw, 1rem);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-gold);
+            font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+        }
+        
+        .favorite-counter {
+            display: flex;
+            align-items: center;
+            font-size: clamp(0.8rem, 1.2vw, 1rem);
+            background: rgba(20, 20, 20, 0.8);
+            padding: clamp(0.3rem, 0.6vw, 0.5rem) clamp(0.6rem, 1.2vw, 1rem);
+            border-radius: 1.875rem;
+            border: 0.0625rem solid var(--accent-gold);
+            box-shadow: 0 0 0.9375rem rgba(212, 175, 55, 0.2);
+            transition: all var(--transition-speed) ease;
+            gap: 0.3rem;
+        }
+        
+        .favorite-counter:hover {
+            background: rgba(30, 30, 30, 0.9);
+            transform: translateY(-0.125rem);
+        }
+        
+        .favorite-counter i {
+            color: var(--accent-red);
+            font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+        }
+        
+        /* Filtros */
+        .filters {
+            display: flex;
+            gap: clamp(0.5rem, 1vw, 1rem);
+            padding: clamp(1rem, 1.5vw, 1.5rem) clamp(1rem, 5vw, 4rem);
+            background: linear-gradient(to right, #0a0a0a, #1a1a1a, #0a0a0a);
+            border-bottom: 0.0625rem solid rgba(212, 175, 55, 0.3);
+            position: sticky;
+            top: var(--header-height);
+            z-index: 900;
+        }
+        
+        .filter-btn {
+            background-color: rgba(20, 20, 20, 0.8);
+            color: var(--text-muted);
+            border: 0.0625rem solid var(--accent-gold);
+            border-radius: 1.875rem;
+            padding: clamp(0.5rem, 0.8vw, 0.7rem) clamp(1rem, 1.5vw, 1.5rem);
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+            font-weight: 500;
+            letter-spacing: 0.03125rem;
+            box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.3);
+        }
+        
+        .filter-btn.active {
+            background-color: var(--accent-gold);
+            color: var(--darker-bg);
+            border-color: var(--accent-gold);
+            font-weight: 600;
+            box-shadow: 0 0 0.9375rem rgba(212, 175, 55, 0.5);
+        }
+        
+        .filter-btn:hover {
+            background-color: rgba(212, 175, 55, 0.3);
+            color: var(--text-light);
+        }
+        
+        /* Grid de Monstros */
+        .monsters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(var(--monster-card-width), 1fr));
+            gap: clamp(1rem, 2vw, 2rem);
+            padding: clamp(1.5rem, 3vw, 3rem) clamp(1rem, 5vw, 4rem);
+        }
+        
+        .monster-card {
+            background: linear-gradient(to bottom, rgba(20, 20, 20, 0.9), rgba(10, 10, 10, 0.95));
+            border-radius: 0.625rem;
+            overflow: hidden;
+            box-shadow: 0 0.5rem 1.5625rem rgba(0, 0, 0, 0.4);
+            transition: all var(--transition-speed) ease;
+            cursor: pointer;
+            position: relative;
+            opacity: 0;
+            transform: translateY(1.25rem);
+            animation: fadeInUp 0.5s ease-out forwards;
+            border: 0.0625rem solid rgba(212, 175, 55, 0.2);
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .monster-card:hover {
+            transform: translateY(-0.5rem);
+            box-shadow: 0 0.9375rem 2.1875rem rgba(0, 0, 0, 0.5);
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+        
+        .monster-image {
+            width: 100%;
+            height: 0;
+            padding-bottom: 70%;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .monster-card:hover .monster-image {
+            padding-bottom: 65%;
+        }
+        
+        .monster-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(to bottom, transparent, rgba(10, 10, 10, 0.95));
+        }
+        
+        .monster-info {
+            padding: clamp(1rem, 1.5vw, 1.5rem);
+            position: relative;
+        }
+        
+        .monster-name {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+            margin-bottom: clamp(0.5rem, 0.8vw, 0.8rem);
+            color: var(--accent-gold);
+            letter-spacing: 0.03125rem;
+        }
+        
+        .monster-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: clamp(0.5rem, 0.8vw, 0.8rem);
+        }
+        
+        .monster-rank {
+            background: rgba(20, 20, 20, 0.8);
+            border: 0.0625rem solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: clamp(0.2rem, 0.4vw, 0.3rem) clamp(0.5rem, 0.8vw, 0.7rem);
+            border-radius: 0.25rem;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 1.1vw, 1rem);
+        }
+        
+        .monster-short-desc {
+            font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+            color: var(--text-muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.7;
+        }
+        
+        .favorite-btn {
+            position: absolute;
+            top: clamp(1rem, 1.5vw, 1.2rem);
+            right: clamp(1rem, 1.5vw, 1.2rem);
+            background: rgba(10, 10, 10, 0.8);
+            border: 0.0625rem solid rgba(212, 175, 55, 0.3);
+            width: clamp(1.8rem, 2.5vw, 2.2rem);
+            height: clamp(1.8rem, 2.5vw, 2.2rem);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all var(--transition-speed) ease;
+            backdrop-filter: blur(0.3125rem);
+            pointer-events: auto;
+        }
+        
+        /* Alteração para evitar hover no botão de favoritar */
+        .monster-card .favorite-btn {
+            pointer-events: auto;
+        }
+        
+        .monster-card:hover .favorite-btn {
+            background: rgba(10, 10, 10, 0.8);
+        }
+        
+        .favorite-btn i {
+            color: var(--text-muted);
+            font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .favorite-btn.favorited i {
+            color: var(--accent-red);
+        }
+        
+        /* Popup de Detalhes */
+.monster-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-speed) ease;
+    padding: 2rem;
+}
+
+.popup-container {
+    width: clamp(50vw, 90vw, 90vw);
+    height: clamp(50vh, 90vh, 90vh);
+    margin: auto;
+    background: linear-gradient(to bottom, #0a0a0a, #050505);
+    border-radius: 1rem !important; /* Força o arredondamento */
+    overflow: hidden !important; /* Mudei de 'auto' para 'hidden' */
+    box-shadow: 0 0 1.875rem rgba(212, 175, 55, 0.3);
+    border: 0.0625rem solid var(--accent-gold);
+    display: flex;
+    flex-direction: column;
+    
+    /* Garante que todos os cantos ficarão arredondados */
+    transform: translateZ(0); /* Aceleração GPU para evitar bugs visuais */
+    will-change: transform; /* Otimização */
+}
+
+        
+        .monster-popup.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+
+        
+        .popup-header {
+            padding: clamp(1rem, 1.5vw, 1.5rem);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 0.0625rem solid rgba(212, 175, 55, 0.3);
+            background: rgba(10, 10, 10, 0.9);
+        }
+        
+        .popup-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            color: var(--accent-gold);
+            letter-spacing: 0.0625rem;
+            text-shadow: 0.0625rem 0.0625rem 0.1875rem rgba(0, 0, 0, 0.8);
+        }
+        
+        .popup-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: clamp(1.5rem, 2.5vw, 1.8rem);
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            width: clamp(2rem, 3vw, 2.5rem);
+            height: clamp(2rem, 3vw, 2.5rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .popup-close:hover {
+            color: var(--accent-gold);
+            animation: rotateClose 0.6s ease;
+        }
+        
+        @keyframes rotateClose {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(180deg); }
+        }
+        
+        .popup-content-wrapper {
+border-radius: inherit;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            height: 100%;
+        }
+        
+        
+        .popup-content {
+            padding: clamp(1.5rem, 2vw, 2rem);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(1rem, 1.5vw, 1.5rem);
+        }
+        
+        .popup-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: clamp(0.8rem, 1.2vw, 1rem);
+            border-bottom: 0.0625rem solid rgba(212, 175, 55, 0.2);
+        }
+        
+        .popup-rank {
+            background: rgba(20, 20, 20, 0.8);
+            border: 0.0625rem solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: clamp(0.3rem, 0.5vw, 0.4rem) clamp(0.6rem, 1vw, 0.8rem);
+            border-radius: 0.25rem;
+            font-weight: 600;
+            font-size: clamp(1rem, 1.3vw, 1.2rem);
+        }
+        
+        .popup-favorite {
+            background: rgba(20, 20, 20, 0.8);
+            border: 0.0625rem solid var(--accent-gold);
+            color: var(--text-light);
+            padding: clamp(0.4rem, 0.6vw, 0.5rem) clamp(0.8rem, 1.2vw, 1rem);
+            border-radius: 1.875rem;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            gap: clamp(0.3rem, 0.5vw, 0.5rem);
+            font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+        }
+        
+        .popup-favorite:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+        
+        .popup-favorite i {
+            color: var(--text-muted);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .popup-favorite.favorited i {
+            color: var(--accent-red);
+        }
+        
+        .popup-favorite:hover i {
+            transform: scale(1.1);
+        }
+        
+        .popup-description {
+            line-height: 1.8;
+            color: var(--text-light);
+            font-size: clamp(0.9rem, 1.2vw, 1rem);
+        }
+        
+        .popup-description img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.3125rem;
+            margin: 1rem 0;
+            border: 0.0625rem solid rgba(212, 175, 55, 0.3);
+        }
+        
+        /* Botão Voltar ao Topo */
+        .back-to-top {
+            position: fixed;
+            bottom: clamp(1.5rem, 3vw, 2rem);
+            right: clamp(1.5rem, 3vw, 2rem);
+            background-color: var(--accent-gold);
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 50%;
+            width: clamp(3rem, 5vw, 3.5rem);
+            height: clamp(3rem, 5vw, 3.5rem);
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 0.25rem 1.25rem rgba(212, 175, 55, 0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 800;
+            font-size: clamp(1rem, 1.5vw, 1.2rem);
+        }
+        
+        .back-to-top.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .back-to-top:hover {
+            background-color: #e6c260;
+            transform: translateY(-0.3125rem);
+            box-shadow: 0 0.375rem 1.5625rem rgba(212, 175, 55, 0.6);
+        }
+        
+        /* Loading */
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50vh;
+            grid-column: 1/-1;
+        }
+        
+        .loading-spinner {
+            width: clamp(3rem, 6vw, 4rem);
+            height: clamp(3rem, 6vw, 4rem);
+            border: clamp(0.3rem, 0.5vw, 0.4rem) solid rgba(212, 175, 55, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--accent-gold);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsividade */
+        @media (max-width: 992px) {
+            :root {
+                --popup-width: 90%;
+            }
+            
+        }
+        
+        @media (max-width: 768px) {
+            :root {
+                --popup-width: 95%;
+            }
+            
+            .header-controls {
+                gap: clamp(0.5rem, 1vw, 1rem);
+            }
+            
+            .search-container {
+                width: clamp(5rem, 30vw, 12.5rem);
+            }
+            
+            .popup-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: clamp(0.8rem, 1.2vw, 1rem);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            :root {
+                --popup-width: 100%;
+                --popup-height: 100vh;
+            }
+            
+            .popup-container {
+                border-radius: 0;
+                max-width: 100%;
+                max-height: 100%;
+            }
+            
+            
+            .filters {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Cabeçalho -->
+    <header>
+        <a href="/" class="logo-container">
+            <i class="fas fa-dragon logo-icon"></i>
+            <span class="logo-text">Roggy World</span>
+        </a>
+        
+        <div class="header-controls">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="searchInput" placeholder="Pesquisar monstro...">
+            </div>
+            <div class="favorite-counter" id="favoriteCounter">
+                <span id="favoriteCount">0</span>
+                <i class="fas fa-heart"></i>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Filtros -->
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="favorites">Favoritos</button>
+    </div>
+    
+    <!-- Grid de Monstros -->
+    <div class="monsters-grid" id="monstersGrid">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+    
+    <!-- Popup de Detalhes -->
+    <div class="monster-popup" id="monsterPopup">
+        <div class="popup-container">
+            <div class="popup-header">
+                <h2 class="popup-title" id="popupTitle"></h2>
+                <button class="popup-close" id="popupClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="popup-content-wrapper">
+                <div class="popup-content">
+                    <div class="popup-meta">
+                        <button class="popup-favorite" id="popupFavoriteBtn">
+                            <i class="fas fa-heart"></i>
+                            <span>Favoritar</span>
+                        </button>
+                    </div>
+                    <div class="popup-description" id="popupDescription"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botão Voltar ao Topo -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    
+    <script>
+        // Escala de Ranking CC
+        const escalaRanking = [
+            { rank: 'FFF-', min: 0, max: 99 },
+            { rank: 'FFF', min: 100, max: 149 },
+            { rank: 'FFF+', min: 150, max: 249 },
+            { rank: 'FF-', min: 250, max: 399 },
+            { rank: 'FF', min: 400, max: 599 },
+            { rank: 'FF+', min: 600, max: 849 },
+            { rank: 'F-', min: 850, max: 1999 },
+            { rank: 'F', min: 2000, max: 3999 },
+            { rank: 'F+', min: 4000, max: 5999 },
+            { rank: 'E-', min: 6000, max: 7999 },
+            { rank: 'E', min: 8000, max: 11999 },
+            { rank: 'E+', min: 12000, max: 17999 },
+            { rank: 'D-', min: 18000, max: 24999 },
+            { rank: 'D', min: 25000, max: 34999 },
+            { rank: 'D+', min: 35000, max: 44999 },
+            { rank: 'C-', min: 45000, max: 54999 },
+            { rank: 'C', min: 55000, max: 64999 },
+            { rank: 'C+', min: 65000, max: 74999 },
+            { rank: 'B-', min: 75000, max: 89999 },
+            { rank: 'B', min: 90000, max: 104999 },
+            { rank: 'B+', min: 105000, max: 179999 },
+            { rank: 'A-', min: 180000, max: 209999 },
+            { rank: 'A', min: 210000, max: 299999 },
+            { rank: 'A+', min: 300000, max: 449999 },
+            { rank: 'S-', min: 450000, max: 599999 },
+            { rank: 'S', min: 600000, max: 849999 },
+            { rank: 'S+', min: 850000, max: 999999 },
+            { rank: 'SS-', min: 1000000, max: 1999999 },
+            { rank: 'SS', min: 2000000, max: 2999999 },
+            { rank: 'SS+', min: 3000000, max: 4999999 },
+            { rank: 'SSS-', min: 5000000, max: 9999999 },
+            { rank: 'SSS', min: 10000000, max: 19999999 },
+            { rank: 'SSS+', min: 20000000, max: Infinity }
+        ];
+        
+        // Estado da aplicação
+        let allMonsters = [];
+        let filteredMonsters = [];
+        let favorites = JSON.parse(localStorage.getItem('favoriteMonsters')) || [];
+        let currentMonster = null;
+        
+        // Elementos DOM
+        const monstersGrid = document.getElementById('monstersGrid');
+        const monsterPopup = document.getElementById('monsterPopup');
+        const popupTitle = document.getElementById('popupTitle');
+        const popupDescription = document.getElementById('popupDescription');
+        const popupClose = document.getElementById('popupClose');
+        const popupFavoriteBtn = document.getElementById('popupFavoriteBtn');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const backToTop = document.getElementById('backToTop');
+        const favoriteCounter = document.getElementById('favoriteCount');
+        const searchInput = document.getElementById('searchInput');
+        const particlesContainer = document.getElementById('particles');
+        
+        // Função para criar partículas de fundo
+        function createParticles() {
+            const particleCount = Math.floor(window.innerWidth / 10);
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Tamanho aleatório entre 0.0625rem e 0.1875rem
+                const size = Math.random() * 0.125 + 0.0625;
+                particle.style.width = `${size}rem`;
+                particle.style.height = `${size}rem`;
+                
+                // Posição inicial aleatória
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Opacidade aleatória
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                
+                // Velocidade de animação aleatória
+                const duration = Math.random() * 20 + 10;
+                particle.style.animation = `float ${duration}s linear infinite`;
+                
+                // Direção aleatória (esquerda ou direita)
+                const direction = Math.random() > 0.5 ? 1 : -1;
+                particle.style.setProperty('--direction', direction);
+                
+                // Adiciona keyframes dinamicamente
+                const keyframes = `
+                    @keyframes float {
+                        0% {
+                            transform: translate(0, 0) rotate(0deg);
+                            opacity: ${particle.style.opacity};
+                        }
+                        50% {
+                            transform: translate(${Math.random() * 100 * direction}px, -6.25rem) rotate(180deg);
+                            opacity: ${Math.random() * 0.5 + 0.1};
+                        }
+                        100% {
+                            transform: translate(${Math.random() * 200 * direction}px, -12.5rem) rotate(360deg);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                
+                const style = document.createElement('style');
+                style.innerHTML = keyframes;
+                document.head.appendChild(style);
+                
+                particlesContainer.appendChild(particle);
+                
+                // Reinicia a partícula quando terminar a animação
+                setInterval(() => {
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `100%`;
+                }, duration * 1000);
+            }
+        }
+        
+        // Função para determinar o ranking baseado no CC
+        function getRanking(cc) {
+            const entry = escalaRanking.find(e => cc >= e.min && cc <= e.max);
+            return entry ? entry.rank : '???';
+        }
+        
+        // Função para formatar o CC
+        function formatCC(cc) {
+            return cc.toFixed(2).replace('.', ',') + 'cc';
+        }
+        
+        // Função para carregar monstros
+        async function loadMonsters() {
+            try {
+                const response = await fetch('./Monsters/AllMonsters.json');
+                if (!response.ok) throw new Error('Falha ao carregar monstros');
+                
+                allMonsters = await response.json();
+                filteredMonsters = [...allMonsters];
+                
+                // Adiciona delay para ver o loading (apenas para demonstração)
+                setTimeout(() => {
+                    renderMonsters();
+                    updateFavoriteCounter();
+                }, 500);
+                
+            } catch (error) {
+                monstersGrid.innerHTML = `
+                    <div class="error-message" style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #d9534f; margin-bottom: 1rem;"></i>
+                        <p>Não foi possível carregar os monstros. Tente recarregar a página.</p>
+                    </div>
+                `;
+                console.error('Erro ao carregar monstros:', error);
+            }
+        }
+        
+        // Função para renderizar monstros
+        function renderMonsters() {
+            monstersGrid.innerHTML = '';
+            
+            if (filteredMonsters.length === 0) {
+                monstersGrid.innerHTML = `
+                    <div class="empty-message" style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                        <i class="fas fa-dragon" style="font-size: 2rem; color: var(--accent-gold); margin-bottom: 1rem;"></i>
+                        <p>Nenhum monstro encontrado.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredMonsters.forEach((monster, index) => {
+                const isFavorited = favorites.includes(monster.name);
+                const ranking = getRanking(monster.cc);
+                
+                // Extrai o texto da descrição sem as tags HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = monster.description;
+                const textContent = tempDiv.textContent || tempDiv.innerText || '';
+                const shortDesc = textContent.substring(0, 150) + (textContent.length > 150 ? '...' : '');
+                
+                const monsterCard = document.createElement('div');
+                monsterCard.className = 'monster-card';
+                monsterCard.style.animationDelay = `${index * 0.1}s`;
+                monsterCard.innerHTML = `
+                    <div class="monster-image" style="background-image: url('${monster.cover}')"></div>
+                    <div class="monster-info">
+                        <h3 class="monster-name">${monster.name}</h3>
+                        <div class="monster-meta">
+                            <div class="monster-rank">${ranking}</div>
+                        </div>
+                        <p class="monster-short-desc">${shortDesc}</p>
+                    </div>
+                    <button class="favorite-btn ${isFavorited ? 'favorited' : ''}" data-name="${monster.name}">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                `;
+                
+                // Adiciona evento de clique ao card
+                const cardContent = monsterCard.querySelector('.monster-info');
+                cardContent.addEventListener('click', () => openMonsterPopup(monster));
+                
+                // Adiciona evento ao botão de favorito (com stopPropagation)
+                const favoriteBtn = monsterCard.querySelector('.favorite-btn');
+                favoriteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(favoriteBtn.dataset.name);
+                });
+                
+                // Remove o hover do card quando o mouse está sobre o botão de favorito
+                favoriteBtn.addEventListener('mouseenter', () => {
+                    monsterCard.style.transform = 'translateY(0)';
+                    monsterCard.style.boxShadow = '0 0.5rem 1.5625rem rgba(0, 0, 0, 0.4)';
+                    monsterCard.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+                });
+                
+                monstersGrid.appendChild(monsterCard);
+            });
+        }
+        
+        // Função para abrir popup de monstro
+        function openMonsterPopup(monster) {
+            currentMonster = monster;
+            const ranking = getRanking(monster.cc);
+            const isFavorited = favorites.includes(monster.name);
+            
+            popupTitle.textContent = monster.name;
+            
+            
+            // Cria uma descrição com a imagem artificial no início
+            const descriptionWithImage = `
+                <div style="margin-bottom: 1.5rem; text-align: center;">
+                    <img src="${monster.cover}" alt="${monster.name}" style="max-width: 100%; border-radius: 0.5rem; border: 1px solid rgba(212, 175, 55, 0.3);">
+                </div>
+                ${monster.description}
+            `;
+            
+            popupDescription.innerHTML = descriptionWithImage;
+            
+            // Configura o botão de favorito no popup
+            popupFavoriteBtn.dataset.name = monster.name;
+            popupFavoriteBtn.classList.toggle('favorited', isFavorited);
+            popupFavoriteBtn.innerHTML = `
+                <i class="fas fa-heart"></i>
+                <span>${isFavorited ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}</span>
+            `;
+            
+            monsterPopup.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Função para fechar popup
+        function closeMonsterPopup() {
+            monsterPopup.classList.remove('show');
+            document.body.style.overflow = '';
+            currentMonster = null;
+        }
+        
+        // Função para alternar favorito
+        function toggleFavorite(monsterName) {
+            const index = favorites.indexOf(monsterName);
+            
+            if (index === -1) {
+                favorites.push(monsterName);
+            } else {
+                favorites.splice(index, 1);
+            }
+            
+            localStorage.setItem('favoriteMonsters', JSON.stringify(favorites));
+            updateFavoriteCounter();
+            
+            // Atualiza o estado dos botões de favorito
+            document.querySelectorAll(`.favorite-btn[data-name="${monsterName}"]`).forEach(btn => {
+                btn.classList.toggle('favorited');
+            });
+            
+            // Atualiza o botão de favorito no popup se estiver aberto
+            if (currentMonster && currentMonster.name === monsterName) {
+                const isFavorited = favorites.includes(monsterName);
+                popupFavoriteBtn.classList.toggle('favorited', isFavorited);
+                popupFavoriteBtn.innerHTML = `
+                    <i class="fas fa-heart"></i>
+                    <span>${isFavorited ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}</span>
+                `;
+            }
+            
+            // Se estiver filtrando por favoritos, atualiza a lista
+            if (document.querySelector('.filter-btn[data-filter="favorites"].active')) {
+                filterMonsters('favorites');
+            }
+        }
+        
+        // Função para atualizar contador de favoritos
+        function updateFavoriteCounter() {
+            favoriteCounter.textContent = favorites.length;
+        }
+        
+        // Função para filtrar monstros
+        function filterMonsters(filter) {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.filter-btn[data-filter="${filter}"]`).classList.add('active');
+            
+            if (filter === 'all') {
+                filteredMonsters = [...allMonsters];
+            } else if (filter === 'favorites') {
+                filteredMonsters = allMonsters.filter(monster => favorites.includes(monster.name));
+            }
+            
+            renderMonsters();
+        }
+        
+        // Função para pesquisar monstros
+        function searchMonsters(query) {
+            query = query.toLowerCase().trim();
+            
+            if (query === '') {
+                filterMonsters(document.querySelector('.filter-btn.active').dataset.filter);
+                return;
+            }
+            
+            filteredMonsters = allMonsters.filter(monster => 
+                monster.name.toLowerCase().includes(query)
+            );
+            
+            renderMonsters();
+        }
+        
+        // Função para verificar scroll e mostrar botão "Voltar ao Topo"
+        function checkScroll() {
+            if (window.scrollY > window.innerHeight * 0.5) {
+                backToTop.classList.add('show');
+            } else {
+                backToTop.classList.remove('show');
+            }
+        }
+        
+        // Função para rolar suavemente ao topo
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Event Listeners
+        popupClose.addEventListener('click', closeMonsterPopup);
+        monsterPopup.addEventListener('click', (e) => {
+            if (e.target === monsterPopup) closeMonsterPopup();
+        });
+        
+        popupFavoriteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFavorite(popupFavoriteBtn.dataset.name);
+        });
+        
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => filterMonsters(btn.dataset.filter));
+        });
+        
+        searchInput.addEventListener('input', (e) => {
+            searchMonsters(e.target.value);
+        });
+        
+        backToTop.addEventListener('click', scrollToTop);
+        window.addEventListener('scroll', checkScroll);
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            loadMonsters();
+            checkScroll();
+        });
+    </script>
+</body>
+</html>
