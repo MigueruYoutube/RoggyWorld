@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epic Weapon Generator</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --dark: #1a1a1a;
+            --darker: #121212;
+            --gold: #d4af37;
+            --light-gold: #f0e6c2;
+            --text: #e0e0e0;
+            --border: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            
+        }
+
+        header {
+            text-align: center;
+            padding: clamp(0.5rem, 2vh, 2rem) 0;
+            border-bottom: 2px solid var(--gold);
+            margin-bottom: clamp(1rem, 3vh, 3rem);
+        }
+
+        h1, h2, h3 {
+            color: var(--gold);
+            font-weight: normal;
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: clamp(1rem, 3vh, 3rem);
+        }
+
+.rarity-display {
+    position: fixed; /* Changed from sticky to fixed */
+    top: 1rem;
+    right: 1rem;
+    background-color: var(--darker);
+    padding: clamp(0.8rem, 1.5vh, 3rem);
+    border: 1px solid var(--gold);
+    border-radius: 0.5rem;
+    z-index: 1000;
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    transform: translateX(0); /* Ensure no layout shift */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.rarity-display.visible {
+    opacity: 1;
+}
+
+        .cost-display {
+            font-size: clamp(1rem, 2vh, 1.5rem);
+        }
+        .cost-display i {
+          transform: translateY(-0.1rem) rotate(120deg) 
+          
+        }
+        .rarity-value {
+            font-size: clamp(1.2rem, 2vh, 3rem);
+            color: var(--light-gold);
+            text-transform: capitalize;
+        }
+
+        .controls {
+            background-color: var(--darker);
+            padding: clamp(1rem, 2vh, 2rem);
+            border-radius: 0.5rem;
+            margin-bottom: clamp(1rem, 3vh, 3rem);
+            border: 1px solid var(--border);
+        }
+
+        .input-group {
+            margin-bottom: clamp(1rem, 2vh, 2rem);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light-gold);
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: clamp(0.5rem, 1.5vh, 1rem);
+            font-size: clamp(1rem, 2vh, 1.2rem);
+            border-radius: 0.3rem;
+        }
+
+        input, select {
+            background-color: #2d2d2d;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        button {
+            background-color: var(--gold);
+            color: var(--dark);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin-top: clamp(0.5rem, 1vh, 1rem);
+        }
+
+        button:hover {
+            background-color: var(--light-gold);
+            transform: translateY(-0.2rem);
+        }
+
+        .creation-methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: clamp(1rem, 2vw, 2rem);
+            margin-top: clamp(1rem, 2vh, 2rem);
+        }
+
+        .method {
+            flex: 1;
+            min-width: 20rem;
+            background-color: #2d2d2d;
+            padding: clamp(1rem, 2vh, 1.5rem);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .item-display {
+            background-color: var(--darker);
+            padding: clamp(1rem, 3vh, 2rem);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            margin-top: clamp(1rem, 3vh, 3rem);
+            display: none;
+        }
+
+        #item-name {
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
+            border-bottom: 1px solid var(--gold);
+            padding-bottom: clamp(0.5rem, 1vh, 1rem);
+        }
+
+        .passives {
+            margin: clamp(1rem, 2vh, 2rem) 0;
+        }
+
+        .passive {
+            background-color: #333;
+            padding: clamp(0.5rem, 1vh, 1rem);
+            margin: clamp(0.3rem, 0.8vh, 0.8rem) 0;
+            border-radius: 0.3rem;
+            border-left: 0.3rem solid var(--gold);
+        }
+
+        #appearance-prompt {
+            background-color: #333;
+            padding: clamp(1rem, 2vh, 1.5rem);
+            border-radius: 0.3rem;
+            font-style: italic;
+            border: 1px dashed var(--gold);
+            margin: clamp(1rem, 2vh, 2rem) 0;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: clamp(0.5rem, 1vw, 1rem);
+            margin-top: clamp(1rem, 2vh, 2rem);
+        }
+
+        .item-actions button {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .creation-methods {
+                flex-direction: column;
+            }
+            
+            .method {
+                min-width: auto;
+            }
+            
+            .item-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+          <div class="rarity-display" id="rarity-display" style="display: none;">
+            <div class="cost-display">        <i class="fas fa-ticket-simple"></i> Cost:  <span id="current-cost">0</span></div>
+            <div class="rarity-value" id="rarity-value"></div>
+        </div>
+
+    <div class="container">
+        <header>
+            <h1>Epic Weapon Generator</h1>
+        </header>
+        <div class="controls">
+            <div class="creation-methods">
+                <div class="method">
+                    <h3>Create with Selected Rarity</h3>
+                    <select id="rarity-select">
+                        <option value="common">Common</option>
+                        <option value="rare">Rare</option>
+                        <option value="epic">Epic</option>
+                        <option value="legendary">Legendary</option>
+                        <option value="mythic">Mythic</option>
+                    </select>
+                    <button id="create-selected">Forge Weapon</button>
+                </div>
+                
+                <div class="method">
+                    <h3>Create Random Rarity Weapon</h3>
+                    <button id="create-random">Forge Random Weapon</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="item-display" id="item-display">
+            <h2 id="item-name"></h2>
+            <p><strong>⚔️ Base Damage:</strong> <span id="item-damage"></span></p>
+            
+            <div class="passives">
+                <h3>Passives:</h3>
+                <div id="passives-list"></div>
+                <button id="add-passive">Add Passive (+Cost)</button>
+            </div>
+            
+            <div id="appearance-prompt"></div>
+            
+            <div class="item-actions">
+                <button id="copy-prompt">Copy Prompt</button>
+                <button id="copy-item">Copy Full Item</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Weapon types
+        const weaponTypes = [
+            "Sword", "Axe", "Mace", "Dagger", "Greatsword", "Bow", "Crossbow",
+            "Staff", "Wand", "Scepter", "Hammer", "Spear", "Halberd", "Glaive",
+            "Rapier", "Scimitar", "Katana", "Whip", "Flail", "Scythe", "Chakram",
+            "Shield", "Gauntlet", "Claw", "Trident", "Blowgun", "Kusarigama"
+        ];
+
+        // Data structure
+        let weaponData = {
+  "common": {
+    "passives": [
+      "⚡ Ataque Rápido: +**5%** de velocidade de ataque\n ㅤ➥ Dura **2** turnos",
+      "🎯 Precisão Leve: +**3%** de chance de acerto\n ㅤ➥ Dano crítico aumenta em **10%**",
+      "🏃 Passo de Guerra: +**6%** de velocidade de movimento em combate\n ㅤ➥ Reduz penalidade por armaduras pesadas em **5%**",
+      "💨 Fôlego de Batalha: Recupera **4** pontos de **Estamina** ao derrotar inimigo\n ㅤ➥ Uma vez por turno",
+      "🛡️ Defesa Instintiva: +**5%** chance de reduzir dano em **8%**\n ㅤ➥ Ativa automaticamente",
+      "✋ Mão Firme: -**20%** de recuo em armas de projéteis\n ㅤ➥ +**5%** de precisão",
+      "⚖️ Estabilidade: Reduz em **10%** a chance de ser derrubado\n ㅤ➥ Efeito permanente",
+      "🔥 Retaliação: Causa **5** de dano fixo ao ser atingido\n ㅤ➥ Escala com **Força**",
+      "👁️ Olhar Atento: +**4%** de chance de crítico\n ㅤ➥ Críticos geram **+2** de Estamina",
+      "🧘 Postura Preparada: -**3%** de dano recebido no primeiro turno de combate\n ㅤ➥ Bônus só reinicia fora de combate",
+
+      "💨 Instinto de Esquiva: +**2%** de chance de esquivar automaticamente\n ㅤ➥ Aumenta para **5%** se HP < **20%**",
+      "🔪 Corte Simples: +**6%** de dano com espadas curtas\n ㅤ➥ +**3%** contra inimigos leves",
+      "💪 Força Bruta: +**5** pontos de **Força**\n ㅤ➥ Empurra inimigos **1m** em ataques corpo a corpo",
+      "😈 Agressividade: +**8%** de velocidade de ataque quando com HP abaixo de **50%**",
+      "🗡️ Lâmina Segura: +**25%** de durabilidade em armas afiadas\n ㅤ➥ Reduz custo de reparo em **10%**",
+      "🏹 Mira Natural: +**5%** de precisão com arcos\n ㅤ➥ +**3%** de chance de crítico à distância",
+      "🔂 Golpe Contínuo: **10%** chance de atacar duas vezes em sequência\n ㅤ➥ Só ativa em ataques básicos",
+      "🎯 Foco de Combate: -**15%** de penalidades por distração\n ㅤ➥ Não se acumula",
+      "🦶 Passo Ágil: +**5%** de velocidade de movimento após esquiva\n ㅤ➥ Dura **1** turno",
+      "🔊 Grito de Batalha: +**4%** de dano em aliados próximos por **2** turnos\n ㅤ➥ Bônus não se acumula",
+
+      "🩸 Sangue Quente: +**2%** de roubo de vida\n ㅤ➥ Apenas em ataques físicos",
+      "💎 Pele Endurecida: -**5%** de dano físico recebido\n ㅤ➥ Não reduz dano mágico",
+      "🌊 Fluxo da Água: +**6%** de esquiva após movimento\n ㅤ➥ Bônus dura **1** turno",
+      "🪨 Resistência Rústica: +**8** pontos de **Constituição**\n ㅤ➥ +**5%** resistência a venenos",
+      "🔥 Espírito Ardente: +**10%** de dano de fogo\n ㅤ➥ Reduz resistência a gelo em **5%**",
+      "❄️ Coração Frio: +**10%** de resistência a gelo\n ㅤ➥ -**5%** resistência a fogo",
+      "⚡ Reflexo Instintivo: +**5%** de velocidade de reação\n ㅤ➥ Chance de agir primeiro em combate",
+      "🌙 Instinto Noturno: +**7%** de precisão em ambientes escuros\n ㅤ➥ +**5%** de dano crítico à noite",
+      "☀️ Força Solar: +**6%** de regeneração de HP durante o dia\n ㅤ➥ Não funciona à noite",
+      "🌑 Poder da Escuridão: +**10%** de dano em ambientes escuros\n ㅤ➥ -**5%** de precisão à luz do sol",
+
+      "🐺 Instinto Animal: +**8%** chance de crítico ao caçar\n ㅤ➥ Regenera **2%** de HP ao matar fera",
+      "🕷️ Reflexo Aracnídeo: Imune a **lentidão de teias**\n ㅤ➥ +**5%** chance de esquiva",
+      "🦅 Visão Aguçada: +**15%** de alcance de visão\n ㅤ➥ +**3%** precisão à distância",
+      "🦴 Ossos Firmes: -**10%** chance de sofrer fraturas\n ㅤ➥ +**5** pontos de Constituição",
+      "💀 Determinação Sombria: Continua lutando **1 turno** após chegar a 0 de HP\n ㅤ➥ Só ativa uma vez por combate",
+      "🧠 Mente Afiada: +**6** pontos de Inteligência\n ㅤ➥ +**10%** de resistência mental",
+      "📖 Sabedoria Antiga: +**4** pontos de Sabedoria\n ㅤ➥ Reduz penalidade por erros críticos em **15%**",
+      "🔮 Fluxo Arcano: +**12** pontos de Mana\n ㅤ➥ Recupera **2** de Mana por turno",
+      "🔥 Impacto Flamejante: **15%** chance de causar **4** de dano de fogo extra\n ㅤ➥ Só em ataques físicos",
+      "❄️ Toque Gélido: **15%** chance de reduzir velocidade inimiga em **8%**\n ㅤ➥ Dura **1** turno",
+
+      "🌪️ Corte Giratório: +**5%** de chance de atingir inimigos próximos\n ㅤ➥ Só com armas de lâmina",
+      "🪓 Força do Machado: +**10%** de dano com machados\n ㅤ➥ Ataques críticos têm **5%** mais chance",
+      "🏹 Foco de Caçador: +**6%** de dano contra feras\n ㅤ➥ Regenera **2** de Estamina ao caçar",
+      "⚔️ Mestre de Espadas: +**8%** de dano com espadas longas\n ㅤ➥ +**5%** chance de bloqueio",
+      "🛡️ Guardião: +**12%** de resistência com escudos\n ㅤ➥ Chance de refletir **3** de dano",
+      "💡 Inspiração: +**10%** de regeneração de Mana fora de combate\n ㅤ➥ Não funciona em batalha",
+      "🌊 Respiração Aquática: Permite respirar embaixo d’água por **30s**\n ㅤ➥ Recarrega após 5min",
+      "🔥 Pele Vulcânica: +**12%** resistência a fogo\n ㅤ➥ -**5%** resistência a gelo",
+      "❄️ Pele Glacial: +**12%** resistência a gelo\n ㅤ➥ -**5%** resistência a fogo",
+      "🌳 Força da Natureza: +**10** pontos de HP em áreas verdes\n ㅤ➥ +**3%** de regeneração",
+
+      "⚡ Impulso: +**8%** de velocidade de movimento por **2** turnos\n ㅤ➥ Ativa após esquiva",
+      "🌀 Giro Defensivo: -**5%** de dano recebido ao esquivar\n ㅤ➥ Dura **1** turno",
+      "🎭 Ilusão Simples: +**4%** chance de confundir inimigo\n ㅤ➥ Dura **1** turno",
+      "🧩 Concentração: -**10%** de chance de interrupção\n ㅤ➥ +**5%** de Mana recuperada",
+      "🧪 Pele Tóxica: **10%** chance de envenenar inimigos que te atacam\n ㅤ➥ Dura **2** turnos",
+      "🩹 Cura Lenta: Recupera **1%** do HP por turno\n ㅤ➥ Não acumula",
+      "💢 Ira Controlada: +**5%** de dano quando abaixo de **30%** de HP\n ㅤ➥ Ativa só uma vez por combate",
+      "🧊 Alma Congelada: Imune a efeitos de **congelamento**\n ㅤ➥ -**5%** resistência a fogo",
+      "🔥 Coração Flamejante: Imune a efeitos de **queimadura**\n ㅤ➥ -**5%** resistência a gelo",
+      "☠️ Espírito Indomável: Imune a **medo**\n ㅤ➥ Reduz resistência mental em **5%**",
+      
+      "⚔️ Técnica Sólida: +**4%** de chance de bloquear ataques\n ㅤ➥ Só funciona com escudo equipado",
+      "🦾 Força Estável: +**6** pontos de Força\n ㅤ➥ Reduz recuo em golpes pesados",
+      "🔮 Aura Arcana: +**10%** de resistência mágica\n ㅤ➥ Reduz recuperação de estamina em **3%**",
+      "🌪️ Giro Ofensivo: +**6%** de dano em ataques em área\n ㅤ➥ Consome **2** pontos extras de estamina",
+      "🕊️ Serenidade: +**5** pontos de Sabedoria\n ㅤ➥ Reduz chance de status negativos em **8%**",
+      "🦅 Olhos do Falcão: +**12%** de precisão com arcos\n ㅤ➥ Reduz penalidade de distância em **10%**",
+      "💎 Pele Rochosa: -**6%** de dano físico recebido\n ㅤ➥ Reduz agilidade em **2** pontos",
+      "🔥 Sangue Ígneo: +**15%** de resistência a queimadura\n ㅤ➥ +**4%** de dano de fogo",
+      "❄️ Sangue Gélido: +**15%** de resistência a gelo\n ㅤ➥ +**4%** de dano de gelo",
+      "⚡ Sangue Tempestuoso: +**15%** de resistência elétrica\n ㅤ➥ +**4%** de dano elétrico",
+
+      "🌑 Vínculo da Sombra: +**5%** de esquiva em ambientes escuros\n ㅤ➥ -**3%** de resistência mágica à luz",
+      "🌞 Força da Aurora: +**5%** de regeneração de HP ao nascer do sol\n ㅤ➥ +**3** pontos de Constituição",
+      "🌙 Poder da Meia-Noite: +**7%** de precisão à noite\n ㅤ➥ Críticos causam +**10%** de dano",
+      "🩸 Instinto Predatório: +**6%** de dano contra inimigos abaixo de **50%** HP",
+      "🛡️ Pele Reforçada: +**20** pontos de Armadura\n ㅤ➥ Reduz velocidade em **3%**",
+      "🦷 Mordida Selvagem: +**5%** de dano físico\n ㅤ➥ Chance de causar **sangramento leve**",
+      "⚖️ Equilíbrio: Reduz chance de ser desequilibrado em **10%**\n ㅤ➥ Efeito passivo",
+      "🎯 Precisão Mortal: +**15%** chance de acerto em pontos vitais\n ㅤ➥ Só em ataques críticos",
+      "🔂 Combo Simples: **5%** de chance de repetir ataque\n ㅤ➥ Não consome estamina extra",
+      "💥 Impacto Brutal: +**10%** de dano com ataques pesados\n ㅤ➥ Consome +**3** de estamina",
+
+      "🌀 Contra-Golpe: **6%** chance de revidar com **50%** do dano recebido",
+      "🌊 Espírito do Mar: +**8%** de regeneração de estamina em ambientes aquáticos",
+      "🧩 Memória Tática: Reduz tempo de recarga de habilidades em **5%**",
+      "🧘 Foco Mental: +**6** pontos de Inteligência\n ㅤ➥ Reduz custo de mana em **5%**",
+      "🌪️ Movimento Ágil: +**10%** de velocidade após esquiva\n ㅤ➥ Efeito dura **1 turno**",
+      "🐉 Espírito Ancestral: +**12%** de dano contra dragões\n ㅤ➥ +**5%** de resistência a fogo",
+      "🕷️ Veneno Natural: **10%** chance de envenenar inimigos\n ㅤ➥ Envenenamento causa **5** de dano por **2 turnos**",
+      "🦴 Ossatura Firme: +**15%** de resistência a atordoamento",
+      "🧠 Concentração Plena: -**12%** chance de interrupção de conjuração",
+      "💫 Aura Menor: +**4%** de resistência mágica\n ㅤ➥ Críticos mágicos causam +**6%** de dano",
+
+      "🔥 Golpe Flamejante: **8%** chance de inflamar o alvo\n ㅤ➥ Causa **6** de dano extra por turno",
+      "❄️ Toque Congelante: **8%** chance de reduzir velocidade inimiga em **10%**",
+      "⚡ Eletrochoque: **8%** chance de paralisar por **1 turno**\n ㅤ➥ Só ativa em críticos",
+      "🌑 Maldição Leve: **5%** chance de reduzir ataque inimigo em **8%**\n ㅤ➥ Dura **2 turnos**",
+      "🦠 Sangue Infectado: +**5%** de dano contra inimigos envenenados",
+      "🦾 Músculos Ativos: +**5** pontos de Força\n ㅤ➥ +**5%** de velocidade de ataque",
+      "👂 Audição Apurada: +**12%** de chance de detectar inimigos ocultos",
+      "👃 Olfato Feroz: +**8%** de chance de prever emboscadas",
+      "🦶 Pés Ligeiros: +**10%** de velocidade fora de combate",
+      "👁️ Sentidos Afiados: +**6** pontos de Percepção\n ㅤ➥ +**3%** de esquiva",
+
+      "💡 Clareza: +**4%** de regeneração de Mana em combate",
+      "📚 Conhecimento Antigo: +**10%** de eficácia em pergaminhos e grimórios",
+      "🪄 Controle Mágico: -**8%** de custo de mana em magias básicas",
+      "🔮 Canalização Arcana: +**6%** de velocidade de conjuração",
+      "☠️ Aura Intimidadora: Reduz moral inimiga em **5%**\n ㅤ➥ Só funciona em combate",
+      "🛡️ Guardião Natural: +**8%** de resistência física\n ㅤ➥ Ativa escudo de **15** pontos por turno",
+      "🔥 Coração Incandescente: +**10%** de dano de fogo\n ㅤ➥ -**3%** resistência a gelo",
+      "❄️ Alma Congelada: +**10%** de dano de gelo\n ㅤ➥ -**3%** resistência a fogo",
+      "⚡ Espírito Tempestuoso: +**10%** de dano elétrico\n ㅤ➥ -**3%** resistência a terra",
+      "🌱 Semente da Vida: Recupera **1%** de HP por turno\n ㅤ➥ Só funciona ao ar livre",
+
+      "🌳 Pele de Carvalho: -**8%** de dano físico\n ㅤ➥ Movimento reduzido em **2%**",
+      "🌾 Harmonia Natural: +**12%** de regeneração de estamina fora de combate",
+      "🦋 Espírito Leve: +**6%** de velocidade de movimento\n ㅤ➥ Reduz carga máxima em **10%**",
+      "🦂 Presa Venenosa: +**5%** de chance de aplicar veneno ao atacar",
+      "🐍 Pele Serpente: Imune a venenos fracos\n ㅤ➥ -**3%** resistência a fogo",
+      "🦢 Graça Natural: +**4%** de esquiva\n ㅤ➥ +**5** pontos de Agilidade",
+      "🦉 Sabedoria da Coruja: +**5** pontos de Sabedoria\n ㅤ➥ Magias de suporte custam **10%** menos mana",
+      "🕊️ Espírito Pacífico: -**10%** chance de ser alvo de inimigos",
+      "🪶 Leveza: -**8%** de dano de queda\n ㅤ➥ +**3%** velocidade de movimento",
+      "🦾 Punho de Ferro: +**10%** de dano desarmado\n ㅤ➥ +**5** pontos de Força",
+   
+      "🌀 Redemoinho: +**5%** de chance de acertar múltiplos inimigos\n ㅤ➥ Só com ataques giratórios",
+      "🔥 Llama Interior: +**12%** de dano de fogo em ataques consecutivos\n ㅤ➥ Dura **2** turnos",
+      "❄️ Geada Persistente: +**10%** de dano de gelo\n ㅤ➥ Reduz velocidade inimiga em **5%**",
+      "⚡ Choque Rápido: **8%** chance de paralisar inimigo por **1** turno",
+      "🌑 Sombra Silenciosa: +**6%** de chance de crítico em emboscadas\n ㅤ➥ Dura **1** turno",
+      "🌞 Sol Abrasador: +**5%** de dano durante o dia\n ㅤ➥ Reduz regeneração inimiga em **2%**",
+      "🌙 Noite Misteriosa: +**7%** de chance de crítico à noite\n ㅤ➥ Ataques críticos aplicam +**3** de dano por turno",
+      "💨 Passo Veloz: +**10%** de velocidade de movimento por **2** turnos\n ㅤ➥ Ativa após esquiva",
+      "🛡️ Bloqueio Forte: +**5%** de chance de reduzir dano em **10%**\n ㅤ➥ Só com escudos",
+      "⚔️ Lâmina Precisa: +**6%** de chance de crítico\n ㅤ➥ +**3%** de dano crítico",
+
+      "🧠 Mente Ágil: +**5%** de velocidade de conjuração\n ㅤ➥ Reduz chance de falha em magias",
+      "💫 Energia Cósmica: +**8%** de dano mágico\n ㅤ➥ +**2%** de regeneração de mana",
+      "🩸 Sangue Determinado: +**3%** de roubo de vida\n ㅤ➥ Só em ataques físicos",
+      "🌊 Corrente Suave: +**5%** de esquiva após movimento\n ㅤ➥ Dura **1** turno",
+      "🦅 Olhos Aguçados: +**8%** de alcance de visão\n ㅤ➥ +**4%** de precisão à distância",
+      "💎 Pele de Cristal: -**6%** de dano físico recebido\n ㅤ➥ Reduz dano mágico em **2%**",
+      "🔥 Alma Incandescente: +**10%** de resistência a fogo\n ㅤ➥ -**3%** resistência a gelo",
+      "❄️ Coração Congelado: +**10%** de resistência a gelo\n ㅤ➥ -**3%** resistência a fogo",
+      "⚡ Eletricidade Contida: +**10%** de resistência elétrica\n ㅤ➥ +**3%** de dano elétrico",
+      "🌑 Olhar das Trevas: +**4%** de chance de crítico em sombra\n ㅤ➥ Dura **2** turnos",
+
+      "🦴 Ossos Fortes: +**12%** de resistência a atordoamento\n ㅤ➥ Reduz efeitos de queda",
+      "🧘 Meditação Profunda: +**5%** de regeneração de mana\n ㅤ➥ Fora de combate",
+      "🦋 Agilidade Natural: +**6%** de velocidade de movimento\n ㅤ➥ Reduz penalidade de armadura em **2%**",
+      "🦂 Presa Venenosa: **8%** de chance de aplicar veneno em ataque físico\n ㅤ➥ Dura **2** turnos",
+      "🦢 Graça Leve: +**4%** de esquiva\n ㅤ➥ +**3** pontos de Agilidade",
+      "🦉 Sabedoria Noturna: +**5** pontos de Sabedoria\n ㅤ➥ Reduz custo de mana de magias de suporte em **10%**",
+      "🕊️ Espírito Pacífico: -**10%** de chance de ser alvo de inimigos\n ㅤ➥ Dura fora de combate",
+      "🪶 Leveza Natural: -**8%** de dano de queda\n ㅤ➥ +**3%** de velocidade de movimento",
+      "🦾 Punho Firme: +**10%** de dano desarmado\n ㅤ➥ +**5** pontos de Força",
+      "💥 Impacto Direto: +**6%** de dano em ataques pesados\n ㅤ➥ Reduz recuo em **5%**",
+
+      "🌪️ Vórtice Ofensivo: +**7%** de chance de atingir inimigos próximos\n ㅤ➥ Só ataques giratórios",
+      "🦾 Braço Forte: +**5%** de dano físico\n ㅤ➥ Empurra inimigos **1m** ao atacar",
+      "🌊 Espírito Fluido: +**5%** de regeneração de estamina em combate aquático",
+      "🧩 Estratégia Simples: -**5%** de tempo de recarga em habilidades básicas",
+      "🧘 Concentração Total: +**6** pontos de Inteligência\n ㅤ➥ +**4%** de resistência mental",
+      "🔥 Queimadura Gradual: **5%** chance de causar **3** de dano de fogo por turno\n ㅤ➥ Dura **2** turnos",
+      "❄️ Gelo Persistente: **5%** chance de reduzir velocidade inimiga em **5%**\n ㅤ➥ Dura **2** turnos",
+      "⚡ Eletro Impulso: **5%** chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🌑 Marca Sombria: **5%** chance de reduzir ataque inimigo em **6%**\n ㅤ➥ Dura **2** turnos",
+      "🦠 Infecção Leve: +**3%** de dano contra inimigos envenenados",
+
+      "🦾 Força Extra: +**4** pontos de Força\n ㅤ➥ +**3%** de dano em ataques físicos",
+      "👂 Ouvido Apurado: +**10%** de chance de detectar inimigos ocultos",
+      "👃 Nariz Fino: +**6%** de chance de detectar emboscadas",
+      "🦶 Passos Leves: +**8%** de velocidade fora de combate",
+      "👁️ Sentidos Aguçados: +**5** pontos de Percepção\n ㅤ➥ +**3%** de esquiva",
+      "💡 Clareza Mental: +**3%** de regeneração de Mana em combate",
+      "📚 Conhecimento Básico: +**5%** de eficácia em pergaminhos e grimórios",
+      "🪄 Controle Básico: -**5%** de custo de mana em magias simples",
+      "🔮 Canalização Leve: +**4%** de velocidade de conjuração",
+      "☠️ Aura Intimidante: Reduz moral inimiga em **3%**\n ㅤ➥ Só funciona em combate",
+
+      "🛡️ Guardião Leve: +**6%** de resistência física\n ㅤ➥ Ativa escudo de **10** pontos",
+      "🔥 Coração Quente: +**8%** de dano de fogo\n ㅤ➥ -**2%** resistência a gelo",
+      "❄️ Alma Fria: +**8%** de dano de gelo\n ㅤ➥ -**2%** resistência a fogo",
+      "⚡ Espírito Elétrico: +**8%** de dano elétrico\n ㅤ➥ -**2%** resistência a terra",
+      "🌱 Vida Simples: Recupera **0.8%** de HP por turno\n ㅤ➥ Só funciona ao ar livre",
+      "🌳 Pele Rústica: -**6%** de dano físico\n ㅤ➥ Reduz movimento em **2%**",
+      "🌾 Harmonia Simples: +**10%** de regeneração de estamina fora de combate",
+      "🦋 Leveza Natural: +**5%** de velocidade de movimento\n ㅤ➥ Reduz penalidade de armadura em **1%**",
+      "🦂 Presa Tóxica: +**4%** de chance de aplicar veneno ao atacar",
+      "🐍 Pele de Cobra: Imune a venenos fracos\n ㅤ➥ -**2%** resistência a fogo",
+  
+      "🌟 Estrela Guia: +**5%** de chance de crítico em aliados próximos\n ㅤ➥ Dura **2** turnos",
+      "🛡️ Barreira Leve: +**8%** de redução de dano físico\n ㅤ➥ Só ativa com escudo equipado",
+      "🔥 Chama Contida: +**6%** de dano de fogo em ataques consecutivos\n ㅤ➥ Dura **2** turnos",
+      "❄️ Brisa Gelada: +**5%** de chance de reduzir velocidade inimiga\n ㅤ➥ Dura **1** turno",
+      "⚡ Faísca Ágil: **5%** chance de atordoar inimigos em ataques rápidos",
+      "🌑 Sussurro das Sombras: +**4%** de chance de crítico à noite\n ㅤ➥ Dura **2** turnos",
+      "🦾 Braço Forte II: +**5%** de dano físico\n ㅤ➥ Empurra inimigos **1m** ao atacar",
+      "🦋 Passos Silenciosos: +**6%** de esquiva fora de combate\n ㅤ➥ Reduz chance de emboscadas",
+      "🧠 Foco Máximo: -**5%** de tempo de recarga em habilidades básicas\n ㅤ➥ Só em combate",
+      "💫 Energia Vital: Recupera **1%** de HP e Mana por turno\n ㅤ➥ Dura fora e dentro de combate"
+    ],
+DamageBase: 40,
+    TicketCost: 1
+  },
+  "rare": {
+    "passives": [
+      "🔥 Fúria Ígnea: +**15%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam o dano em **5%** por acúmulo (máx. **3**)",
+      "❄️ Geada Mortal: +**12%** de dano de gelo\n ㅤ➥ Reduz velocidade inimiga em **10%** por **2** turnos",
+      "⚡ Corrente Elétrica: **10%** chance de atordoar inimigos\n ㅤ➥ Afeta até **2** inimigos próximos",
+      "🌙 Eclipse Sombrio: +**8%** de chance de crítico à noite\n ㅤ➥ Dura **3** turnos",
+      "🛡️ Proteção Absoluta: +**20%** de resistência física\n ㅤ➥ Ativa escudo de **50** pontos ao receber crítico",
+      "💫 Aura Mística: +**10%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🩸 Sifão de Vida: Rouba **5%** da vida inimiga em ataques críticos\n ㅤ➥ Cura adicional de **10%** se HP abaixo de **50%**",
+      "🌪️ Tornado Cortante: +**12%** de velocidade de ataque\n ㅤ➥ **8%** chance de atingir inimigos adjacentes",
+      "🦅 Olhos de Águia: +**10%** de alcance e precisão\n ㅤ➥ Ignora **15%** da cobertura do alvo",
+      "⚔️ Golpe Magistral: +**10%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **5%**",
+
+      "🧠 Mente Estratégica: +**8%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **10%**",
+      "🦋 Passos Leves: +**12%** de esquiva\n ㅤ➥ +**5** pontos de Agilidade durante combate",
+      "🦾 Punho de Titânio: +**15%** de dano desarmado\n ㅤ➥ Ataques empurram inimigos **3** metros",
+      "🌊 Maré Fluida: +**8%** de regeneração de estamina\n ㅤ➥ Acumula bônus após cada ataque consecutivo",
+      "💎 Pele de Cristal Rara: -**12%** de dano físico recebido\n ㅤ➥ Reduz efeitos de debuffs em **5%**",
+      "🔥 Incêndio Crescente: +**10%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+50%** após **5** ataques",
+      "❄️ Congelamento Intenso: +**8%** de dano de gelo\n ㅤ➥ **10%** chance de congelar inimigo por **1** turno",
+      "⚡ Faísca Elétrica: +**6%** de chance de paralisação em ataques críticos",
+      "🌑 Sombra Silenciosa: +**7%** de dano contra inimigos com menos de **50%** HP",
+      "🦠 Veneno Avançado: **10%** chance de aplicar veneno poderoso\n ㅤ➥ Causa **20** de dano por turno por **3** turnos",
+
+      "🛡️ Barreira Rara: +**25%** de resistência mágica\n ㅤ➥ Ativa escudo de **30** pontos ao receber dano elemental",
+      "💫 Luz Celestial: +**12%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **5%** de HP a cada acerto",
+      "🩸 Sangue Sagrado: **15%** chance de roubar vida em ataques mágicos\n ㅤ➥ Cura adicional se HP abaixo de **40%**",
+      "🌀 Redemoinho Avançado: +**10%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica efeito de empurrão",
+      "🌿 Raízes Vitais: **8%** chance de enraizar inimigo\n ㅤ➥ Drena **5%** de HP por turno enquanto enraizado",
+      "🦉 Sabedoria Noturna: +**10** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **15%** à noite",
+      "🦶 Passos Fantasmagóricos: +**15%** de esquiva\n ㅤ➥ Reduz chance de ser detectado por inimigos",
+      "⚡ Estática Avançada: Cada ataque acumula carga elétrica\n ㅤ➥ **15** cargas liberam raio que causa **120** de dano",
+      "💥 Impacto Supremo: +**12%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **10%**",
+      "🛡️ Guardião Raro: +**15%** de resistência física\n ㅤ➥ Ativa escudo extra de **40** pontos ao receber crítico",
+
+      "🔥 Chama Devastadora: **20%** chance de incendiar inimigo por **3** turnos\n ㅤ➥ Causa **15** de dano por turno",
+      "❄️ Gelo Cortante: +**15%** de chance de congelar inimigo\n ㅤ➥ Dura **2** turnos",
+      "⚡ Raios Rápidos: **12%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse das Sombras: +**10%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **8%**",
+      "💫 Energia Cósmica Rara: +**15%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos",
+      "🩸 Sangue do Herói: **10%** chance de roubo de vida\n ㅤ➥ Cura adicional de **15** quando abaixo de **30%** HP",
+      "🦾 Braço de Ferro: +**18%** de dano físico\n ㅤ➥ Empurra inimigos **4** metros ao atacar",
+      "🌊 Tsunami: +**12%** de velocidade de ataque\n ㅤ➥ **10%** chance de atingir inimigos adjacentes",
+      "🦅 Visão Aguçada: +**12%** de precisão\n ㅤ➥ Ignora **20%** da armadura do alvo",
+      "⚔️ Lâmina Suprema: +**15%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **8%**",
+
+      "🧠 Mente Mestre: +**10%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **15%**",
+      "🦋 Agilidade Suprema: +**15%** de esquiva\n ㅤ➥ +**8** pontos de Agilidade",
+      "🔥 Fogo Crescente: +**18%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+60%** após **6** ataques",
+      "❄️ Congelamento Extremo: +**15%** de dano de gelo\n ㅤ➥ **12%** chance de congelar inimigo por **1** turno",
+      "⚡ Faísca Suprema: +**10%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🌑 Sombra Absoluta: +**12%** de dano contra inimigos abaixo de **50%** HP",
+      "🩸 Veneno Mortal: **15%** chance de envenenar inimigo\n ㅤ➥ Dura **4** turnos e causa **25** de dano por turno",
+      "🛡️ Barreira Suprema: +**30%** de resistência física\n ㅤ➥ Escudo ativo de **60** pontos",
+      "💫 Luz Divina: +**18%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **8%** de HP por acerto",
+      "🌀 Tornado Avançado: +**12%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+
+      "🌿 Raízes Ancestrais: **12%** chance de enraizar inimigo\n ㅤ➥ Drena **8%** de HP por turno enquanto enraizado",
+      "🦉 Sabedoria Suprema: +**15** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **20%** à noite",
+      "🦶 Passos Fantasmais: +**18%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Suprema: Cada ataque acumula carga elétrica\n ㅤ➥ **20** cargas liberam raio que causa **150** de dano",
+      "💥 Impacto Final: +**15%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **12%**",
+      "🔥 Chama Final: **25%** chance de incendiar inimigo por **3** turnos\n ㅤ➥ Causa **20** de dano por turno",
+      "❄️ Gelo Mortal: +**20%** de chance de congelar inimigo\n ㅤ➥ Dura **3** turnos",
+      "⚡ Raios Supremos: **15%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Supremo: +**12%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **10%**",
+      "💫 Energia Cósmica Suprema: +**20%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+    
+      "🛡️ Guardião Supremo: +**35%** de resistência física\n ㅤ➥ Ativa escudo de **80** pontos ao receber crítico",
+      "🔥 Inferno Raro: +**25%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **8%** por acúmulo (máx. **5**)",
+      "❄️ Tempestade Gélida: +**20%** de dano de gelo\n ㅤ➥ **15%** chance de congelar inimigos por **2** turnos",
+      "⚡ Relâmpago Supremo: **18%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **100** de dano adicional",
+      "🌑 Sombra Ancestral: +**15%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **3** turnos",
+      "💫 Luz Celestial Suprema: +**25%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **12%** de HP por acerto",
+      "🩸 Sifão Vital Supremo: **18%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **20%** quando HP <50%",
+      "🦾 Punho de Titã: +**25%** de dano desarmado\n ㅤ➥ Empurra inimigos **5** metros",
+      "🌊 Tsunami Avançado: +**18%** de velocidade de ataque\n ㅤ➥ **12%** chance de atingir inimigos adjacentes",
+      "🦅 Olhos de Águia Supremo: +**15%** de alcance e precisão\n ㅤ➥ Ignora **25%** da armadura do alvo",
+
+      "⚔️ Golpe Supremo: +**20%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **10%**",
+      "🧠 Mente Estratégica Suprema: +**12%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **20%**",
+      "🦋 Agilidade Suprema: +**20%** de esquiva\n ㅤ➥ +**10** pontos de Agilidade em combate",
+      "🔥 Fogo Devastador: +**30%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+80%** após **6** ataques",
+      "❄️ Congelamento Supremo: +**20%** de dano de gelo\n ㅤ➥ **15%** chance de congelar inimigo por **1** turno",
+      "⚡ Faísca Final: +**12%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Fatal: **20%** chance de envenenar inimigo\n ㅤ➥ Dura **5** turnos e causa **30** de dano por turno",
+      "🛡️ Barreira Suprema: +**40%** de resistência física\n ㅤ➥ Escudo ativo de **100** pontos",
+      "💫 Aura Divina: +**25%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **15%** de HP por acerto",
+      "🌀 Tornado Supremo: +**15%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+
+      "🌿 Raízes Ancestrais: **15%** chance de enraizar inimigo\n ㅤ➥ Drena **10%** de HP por turno enquanto enraizado",
+      "🦉 Sabedoria Suprema: +**20** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **25%** à noite",
+      "🦶 Passos Fantasmais: +**25%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Suprema: Cada ataque acumula carga elétrica\n ㅤ➥ **25** cargas liberam raio que causa **200** de dano",
+      "💥 Impacto Final Supremo: +**20%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **15%**",
+      "🔥 Chama Final Suprema: **30%** chance de incendiar inimigo por **3** turnos\n ㅤ➥ Causa **25** de dano por turno",
+      "❄️ Gelo Mortal Supremo: +**25%** de chance de congelar inimigo\n ㅤ➥ Dura **3** turnos",
+      "⚡ Raios Divinos: **20%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Supremo Avançado: +**18%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **12%**",
+      "💫 Energia Cósmica Absoluta: +**30%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+
+      "🛡️ Guardião da Luz: +**50%** de resistência mágica\n ㅤ➥ Escudo ativo de **120** pontos",
+      "🔥 Inferno Ancestral: +**35%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **10%** por acúmulo (máx. **5**)",
+      "❄️ Tempestade Glacial: +**30%** de dano de gelo\n ㅤ➥ **20%** chance de congelar inimigos por **3** turnos",
+      "⚡ Relâmpago Ancestral: **25%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **150** de dano adicional",
+      "🌑 Sombra Suprema: +**20%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **4** turnos",
+      "💫 Luz Divina Absoluta: +**35%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **20%** de HP por acerto",
+      "🩸 Sifão Vital Absoluto: **25%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **25%** quando HP <50%",
+      "🦾 Punho Supremo: +**35%** de dano desarmado\n ㅤ➥ Empurra inimigos **6** metros",
+      "🌊 Tsunami Final: +**25%** de velocidade de ataque\n ㅤ➥ **15%** chance de atingir inimigos adjacentes",
+      "🦅 Visão Ancestral: +**25%** de alcance e precisão\n ㅤ➥ Ignora **30%** da armadura do alvo",
+
+      "⚔️ Golpe Ancestral: +**25%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **15%**",
+      "🧠 Mente Suprema: +**20%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **30%**",
+      "🦋 Agilidade Absoluta: +**35%** de esquiva\n ㅤ➥ +**15** pontos de Agilidade em combate",
+      "🔥 Fogo Supremo: +**40%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+100%** após **7** ataques",
+      "❄️ Congelamento Absoluto: +**35%** de dano de gelo\n ㅤ➥ **20%** chance de congelar inimigo por **1** turno",
+      "⚡ Faísca Suprema Final: +**15%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Ancestral: **25%** chance de envenenar inimigo\n ㅤ➥ Dura **6** turnos e causa **35** de dano por turno",
+      "🛡️ Barreira Absoluta: +**50%** de resistência física\n ㅤ➥ Escudo ativo de **150** pontos",
+      "💫 Aura Divina Final: +**40%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **20%** de HP por acerto",
+      "🌀 Tornado Absoluto: +**20%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+   
+    "🔥 Fúria Solar: +**40%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **12%** por acúmulo (máx. **6**)",
+    "❄️ Glacial Extremo: +**35%** de dano de gelo\n ㅤ➥ **25%** chance de congelar inimigo por **3** turnos",
+    "⚡ Tempestade de Raios: **30%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **200** de dano adicional",
+    "🌑 Sombra da Noite: +**25%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **4** turnos",
+    "💫 Luz Divina Suprema: +**45%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **25%** de HP por acerto",
+    "🩸 Sifão da Eternidade: **30%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **30%** quando HP <50%",
+    "🦾 Punho de Colosso: +**50%** de dano desarmado\n ㅤ➥ Empurra inimigos **7** metros",
+    "🌊 Mar Revolto: +**30%** de velocidade de ataque\n ㅤ➥ **20%** chance de atingir inimigos adjacentes",
+    "🦅 Visão de Falcão: +**35%** de alcance e precisão\n ㅤ➥ Ignora **35%** da armadura do alvo",
+    "⚔️ Golpe do Destino: +**30%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **18%**",
+
+    "🧠 Mente Suprema Absoluta: +**25%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **35%**",
+    "🦋 Passos de Vento: +**40%** de esquiva\n ㅤ➥ +**20** pontos de Agilidade em combate",
+    "🔥 Chama Eterna: +**50%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+120%** após **7** ataques",
+    "❄️ Congelamento Final: +**40%** de dano de gelo\n ㅤ➥ **25%** chance de congelar inimigo por **1** turno",
+    "⚡ Faísca Divina: +**18%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+    "🩸 Veneno Supremo: **30%** chance de envenenar inimigo\n ㅤ➥ Dura **7** turnos e causa **40** de dano por turno",
+    "🛡️ Barreira de Titã: +**55%** de resistência física\n ㅤ➥ Escudo ativo de **180** pontos",
+    "💫 Aura Suprema: +**50%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **25%** de HP por acerto",
+    "🌀 Tornado Final: +**25%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+    "🌿 Raízes Eternas: **20%** chance de enraizar inimigo\n ㅤ➥ Drena **12%** de HP por turno enquanto enraizado",
+
+    "🦉 Sabedoria Absoluta: +**25** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **30%** à noite",
+    "🦶 Passos Fantasmagóricos Avançados: +**35%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+    "⚡ Estática Final: Cada ataque acumula carga elétrica\n ㅤ➥ **30** cargas liberam raio que causa **250** de dano",
+    "💥 Impacto Supremo: +**25%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **18%**",
+    "🔥 Chama Ancestral: **35%** chance de incendiar inimigo por **3** turnos\n ㅤ➥ Causa **30** de dano por turno",
+    "❄️ Gelo Supremo: +**30%** de chance de congelar inimigo\n ㅤ➥ Dura **4** turnos",
+    "⚡ Raios Eternos: **25%** chance de paralisar inimigos próximos",
+    "🌑 Eclipse Final: +**20%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **15%**",
+    "💫 Energia Cósmica Final: +**55%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+    "🛡️ Guardião da Eternidade: +**60%** de resistência mágica\n ㅤ➥ Escudo ativo de **200** pontos",
+
+    "🔥 Inferno Final: +**45%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **15%** por acúmulo (máx. **6**)",
+    "❄️ Tempestade Gélida Suprema: +**40%** de dano de gelo\n ㅤ➥ **30%** chance de congelar inimigos por **3** turnos",
+    "⚡ Relâmpago da Eternidade: **35%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **250** de dano adicional",
+    "🌑 Sombra Final: +**30%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **5** turnos",
+    "💫 Luz Divina Absoluta: +**55%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **30%** de HP por acerto",
+    "🩸 Sifão Absoluto: **35%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **35%** quando HP <50%",
+    "🦾 Punho Final: +**60%** de dano desarmado\n ㅤ➥ Empurra inimigos **8** metros",
+    "🌊 Tsunami Supremo: +**35%** de velocidade de ataque\n ㅤ➥ **25%** chance de atingir inimigos adjacentes",
+    "🦅 Visão Ancestral Suprema: +**40%** de alcance e precisão\n ㅤ➥ Ignora **40%** da armadura do alvo",
+    "⚔️ Golpe da Eternidade: +**35%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **20%**",
+
+    "🧠 Mente Absoluta Final: +**30%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **40%**",
+    "🦋 Agilidade Suprema Final: +**45%** de esquiva\n ㅤ➥ +**25** pontos de Agilidade em combate",
+    "🔥 Fogo Supremo Final: +**60%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+150%** após **8** ataques",
+    "❄️ Congelamento Absoluto Final: +**50%** de dano de gelo\n ㅤ➥ **30%** chance de congelar inimigo por **1** turno",
+    "⚡ Faísca Absoluta: +**20%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+    "🩸 Veneno Absoluto: **35%** chance de envenenar inimigo\n ㅤ➥ Dura **8** turnos e causa **45** de dano por turno",
+    "🛡️ Barreira Final: +**65%** de resistência física\n ㅤ➥ Escudo ativo de **220** pontos",
+    "💫 Aura Suprema Final: +**60%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **30%** de HP por acerto",
+    "🌀 Tornado Absoluto Final: +**30%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+    "🌿 Raízes Eternas Avançadas: **25%** chance de enraizar inimigo\n ㅤ➥ Drena **15%** de HP por turno enquanto enraizado"
+    ],
+DamageBase: 70,
+    TicketCost: 3
+},
+  "epic": {
+    "passives": [
+      "🔥 Fúria do Sol Eterno: +**60%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **20%** por acúmulo (máx. **8**)",
+      "❄️ Glacial Absoluto: +**50%** de dano de gelo\n ㅤ➥ **35%** chance de congelar inimigo por **3** turnos",
+      "⚡ Tempestade Divina: **40%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **300** de dano adicional",
+      "🌑 Sombra Eterna: +**35%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **5** turnos",
+      "💫 Luz Suprema: +**60%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **40%** de HP por acerto",
+      "🩸 Sifão Supremo: **40%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **40%** quando HP <50%",
+      "🦾 Punho Colossal: +**70%** de dano desarmado\n ㅤ➥ Empurra inimigos **10** metros",
+      "🌊 Mar de Fúria: +**40%** de velocidade de ataque\n ㅤ➥ **30%** chance de atingir inimigos adjacentes",
+      "🦅 Olhos de Falcão Supremo: +**50%** de alcance e precisão\n ㅤ➥ Ignora **45%** da armadura do alvo",
+      "⚔️ Golpe Ancestral Supremo: +**40%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **25%**",
+
+      "🧠 Mente Divina: +**35%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **45%**",
+      "🦋 Agilidade Lendária: +**55%** de esquiva\n ㅤ➥ +**30** pontos de Agilidade em combate",
+      "🔥 Chama Lendária: +**70%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+180%** após **8** ataques",
+      "❄️ Congelamento Lendário: +**55%** de dano de gelo\n ㅤ➥ **35%** chance de congelar inimigo por **1** turno",
+      "⚡ Faísca Suprema: +**25%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Lendário: **40%** chance de envenenar inimigo\n ㅤ➥ Dura **9** turnos e causa **50** de dano por turno",
+      "🛡️ Barreira Divina: +**70%** de resistência física\n ㅤ➥ Escudo ativo de **250** pontos",
+      "💫 Aura Épica: +**70%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **35%** de HP por acerto",
+      "🌀 Tornado Lendário: +**35%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+      "🌿 Raízes Ancestrais Épicas: **30%** chance de enraizar inimigo\n ㅤ➥ Drena **20%** de HP por turno enquanto enraizado",
+
+      "🦉 Sabedoria Lendária: +**30** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **35%** à noite",
+      "🦶 Passos Fantasmais Épicos: +**50%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Absoluta: Cada ataque acumula carga elétrica\n ㅤ➥ **40** cargas liberam raio que causa **300** de dano",
+      "💥 Impacto Lendário: +**30%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **20%**",
+      "🔥 Chama Ancestral Épica: **40%** chance de incendiar inimigo por **3** turnos\n ㅤ➥ Causa **35** de dano por turno",
+      "❄️ Gelo Supremo Épico: +**40%** de chance de congelar inimigo\n ㅤ➥ Dura **5** turnos",
+      "⚡ Raios Eternos Épicos: **30%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Lendário: +**25%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **20%**",
+      "💫 Energia Cósmica Suprema: +**65%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🛡️ Guardião Épico: +**75%** de resistência mágica\n ㅤ➥ Escudo ativo de **300** pontos",
+
+      "🔥 Inferno Lendário: +**55%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **18%** por acúmulo (máx. **8**)",
+      "❄️ Tempestade Glacial Épica: +**50%** de dano de gelo\n ㅤ➥ **40%** chance de congelar inimigos por **3** turnos",
+      "⚡ Relâmpago da Eternidade Épico: **40%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **300** de dano adicional",
+      "🌑 Sombra Final Épica: +**40%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **5** turnos",
+      "💫 Luz Divina Absoluta Épica: +**70%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **40%** de HP por acerto",
+      "🩸 Sifão Absoluto Épico: **45%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **45%** quando HP <50%",
+      "🦾 Punho Final Épico: +**80%** de dano desarmado\n ㅤ➥ Empurra inimigos **12** metros",
+      "🌊 Tsunami Supremo Épico: +**45%** de velocidade de ataque\n ㅤ➥ **35%** chance de atingir inimigos adjacentes",
+      "🦅 Visão Ancestral Suprema Épica: +**55%** de alcance e precisão\n ㅤ➥ Ignora **50%** da armadura do alvo",
+      "⚔️ Golpe da Eternidade Épico: +**45%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **25%**",
+    
+      "🔥 Labareda Suprema: +**65%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **22%** por acúmulo (máx. **9**)",
+      "❄️ Congelamento Absoluto: +**55%** de dano de gelo\n ㅤ➥ **40%** chance de congelar inimigos por **3** turnos",
+      "⚡ Choque Celestial: **45%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **320** de dano adicional",
+      "🌑 Sombra Ancestral: +**40%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **6** turnos",
+      "💫 Luz Celeste: +**75%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **45%** de HP por acerto",
+      "🩸 Sifão da Eternidade: **50%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **50%** quando HP <50%",
+      "🦾 Punho Ancestral: +**85%** de dano desarmado\n ㅤ➥ Empurra inimigos **13** metros",
+      "🌊 Tsunami Final: +**50%** de velocidade de ataque\n ㅤ➥ **40%** chance de atingir inimigos adjacentes",
+      "🦅 Olhar de Águia Lendário: +**60%** de alcance e precisão\n ㅤ➥ Ignora **55%** da armadura do alvo",
+      "⚔️ Golpe Supremo: +**50%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **30%**",
+
+      "🧠 Mente Cósmica: +**40%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **50%**",
+      "🦋 Agilidade Suprema: +**60%** de esquiva\n ㅤ➥ +**35** pontos de Agilidade em combate",
+      "🔥 Fogo Ancestral: +**75%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+200%** após **9** ataques",
+      "❄️ Congelamento Lendário: +**60%** de dano de gelo\n ㅤ➥ **40%** chance de congelar inimigo por **1** turno",
+      "⚡ Faísca Absoluta: +**30%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Supremo: **45%** chance de envenenar inimigo\n ㅤ➥ Dura **10** turnos e causa **55** de dano por turno",
+      "🛡️ Barreira Épica: +**75%** de resistência física\n ㅤ➥ Escudo ativo de **320** pontos",
+      "💫 Aura Suprema Absoluta: +**75%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **40%** de HP por acerto",
+      "🌀 Tornado Supremo: +**40%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+      "🌿 Raízes Eternas Ancestrais: **35%** chance de enraizar inimigo\n ㅤ➥ Drena **25%** de HP por turno enquanto enraizado",
+
+      "🦉 Sabedoria Suprema: +**35** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **40%** à noite",
+      "🦶 Passos Fantasmagóricos Épicos: +**55%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Suprema: Cada ataque acumula carga elétrica\n ㅤ➥ **45** cargas liberam raio que causa **350** de dano",
+      "💥 Impacto Absoluto: +**35%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **25%**",
+      "🔥 Chama Suprema: **45%** chance de incendiar inimigo por **3** turnos\n ㅤ➥ Causa **40** de dano por turno",
+      "❄️ Gelo Absoluto Épico: +**45%** de chance de congelar inimigo\n ㅤ➥ Dura **6** turnos",
+      "⚡ Raios Divinos: **35%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Supremo: +**30%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **25%**",
+      "💫 Energia Cósmica Épica: +**70%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🛡️ Guardião Supremo: +**80%** de resistência mágica\n ㅤ➥ Escudo ativo de **350** pontos",
+
+      "🔥 Inferno Lendário Épico: +**60%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **20%** por acúmulo (máx. **9**)",
+      "❄️ Tempestade Glacial Absoluta: +**55%** de dano de gelo\n ㅤ➥ **45%** chance de congelar inimigos por **3** turnos",
+      "⚡ Relâmpago da Eternidade Épico: **45%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **350** de dano adicional",
+      "🌑 Sombra Final Absoluta: +**45%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **6** turnos",
+      "💫 Luz Divina Suprema: +**80%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **45%** de HP por acerto",
+      "🩸 Sifão Absoluto Épico: **50%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **50%** quando HP <50%",
+      "🦾 Punho Final Absoluto: +**90%** de dano desarmado\n ㅤ➥ Empurra inimigos **15** metros",
+      "🌊 Tsunami Supremo Absoluto: +**50%** de velocidade de ataque\n ㅤ➥ **40%** chance de atingir inimigos adjacentes",
+      "🦅 Visão Ancestral Suprema Absoluta: +**60%** de alcance e precisão\n ㅤ➥ Ignora **60%** da armadura do alvo",
+      "⚔️ Golpe da Eternidade Absoluto: +**50%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **30%**",
+
+      "🔥 Labareda Final: +**70%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **25%** por acúmulo (máx. **10**)",
+      "❄️ Congelamento Supremo: +**60%** de dano de gelo\n ㅤ➥ **45%** chance de congelar inimigos por **3** turnos",
+      "⚡ Choque Absoluto: **50%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **380** de dano adicional",
+      "🌑 Sombra Infinita: +**50%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **7** turnos",
+      "💫 Luz Celestial Suprema: +**85%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **50%** de HP por acerto",
+      "🩸 Sifão Final: **55%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **55%** quando HP <50%",
+      "🦾 Punho Final Absoluto: +**95%** de dano desarmado\n ㅤ➥ Empurra inimigos **18** metros",
+      "🌊 Tsunami Final Supremo: +**55%** de velocidade de ataque\n ㅤ➥ **45%** chance de atingir inimigos adjacentes",
+      "🦅 Olhar de Águia Absoluto: +**65%** de alcance e precisão\n ㅤ➥ Ignora **65%** da armadura do alvo",
+      "⚔️ Golpe Supremo Final: +**55%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **35%**",
+
+      "🧠 Mente Suprema Absoluta: +**45%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **55%**",
+      "🦋 Agilidade Final Épica: +**65%** de esquiva\n ㅤ➥ +**40** pontos de Agilidade em combate",
+      "🔥 Fogo Final Lendário: +**80%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+220%** após **10** ataques",
+      "❄️ Congelamento Absoluto Lendário: +**65%** de dano de gelo\n ㅤ➥ **45%** chance de congelar inimigo por **1** turno",
+      "⚡ Faísca Suprema: +**35%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Final: **50%** chance de envenenar inimigo\n ㅤ➥ Dura **12** turnos e causa **60** de dano por turno",
+      "🛡️ Barreira Suprema: +**85%** de resistência física\n ㅤ➥ Escudo ativo de **400** pontos",
+      "💫 Aura Final Absoluta: +**80%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **45%** de HP por acerto",
+      "🌀 Tornado Final: +**45%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+      "🌿 Raízes Eternas Supremas: **40%** chance de enraizar inimigo\n ㅤ➥ Drena **30%** de HP por turno enquanto enraizado",
+
+      "🦉 Sabedoria Final: +**40** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **45%** à noite",
+      "🦶 Passos Fantasmagóricos Supremos: +**60%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Final: Cada ataque acumula carga elétrica\n ㅤ➥ **50** cargas liberam raio que causa **400** de dano",
+      "💥 Impacto Supremo: +**40%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **30%**",
+      "🔥 Chama Final Suprema: **50%** chance de incendiar inimigo por **3** turnos\n ㅤ➥ Causa **45** de dano por turno",
+      "❄️ Gelo Final Absoluto: +**50%** de chance de congelar inimigo\n ㅤ➥ Dura **7** turnos",
+      "⚡ Raios Final: **40%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Final: +**35%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **30%**",
+      "💫 Energia Cósmica Final: +**75%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🛡️ Guardião Final: +**90%** de resistência mágica\n ㅤ➥ Escudo ativo de **450** pontos",
+
+      "🔥 Inferno Final Lendário: +**65%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **25%** por acúmulo (máx. **10**)",
+      "❄️ Tempestade Glacial Final: +**60%** de dano de gelo\n ㅤ➥ **50%** chance de congelar inimigos por **3** turnos",
+      "⚡ Relâmpago Final Absoluto: **50%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **400** de dano adicional",
+      "🌑 Sombra Final Suprema: +**50%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **7** turnos",
+      "💫 Luz Divina Final: +**90%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **50%** de HP por acerto",
+      "🩸 Sifão Final Absoluto: **55%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **55%** quando HP <50%",
+      "🦾 Punho Final Supremo: +**100%** de dano desarmado\n ㅤ➥ Empurra inimigos **20** metros",
+      "🌊 Tsunami Final Absoluto: +**55%** de velocidade de ataque\n ㅤ➥ **45%** chance de atingir inimigos adjacentes",
+      "🦅 Visão Final Absoluta: +**70%** de alcance e precisão\n ㅤ➥ Ignora **70%** da armadura do alvo",
+      "⚔️ Golpe Final da Eternidade: +**60%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **35%**"
+    ],
+DamageBase: 100,
+                TicketCost: 7
+            },
+  "legendary": {
+    "passives": [
+      "🔥 Labareda Divina: +**120%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **40%** por acúmulo (máx. **15**)",
+      "❄️ Congelamento Supremo: +**110%** de dano de gelo\n ㅤ➥ **60%** chance de congelar inimigos por **4** turnos",
+      "⚡ Choque Absoluto Divino: **70%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **600** de dano adicional",
+      "🌑 Sombra Infinita Lendária: +**95%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **8** turnos",
+      "💫 Luz Celestial Absoluta: +**130%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **70%** de HP por acerto",
+      "🩸 Sifão da Eternidade Divino: **65%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **65%** quando HP <50%",
+      "🦾 Punho da Eternidade: +**150%** de dano desarmado\n ㅤ➥ Empurra inimigos **25** metros",
+      "🌊 Tsunami Divino: +**75%** de velocidade de ataque\n ㅤ➥ **60%** chance de atingir inimigos adjacentes",
+      "🦅 Olhar de Águia Lendário: +**80%** de alcance e precisão\n ㅤ➥ Ignora **80%** da armadura do alvo",
+      "⚔️ Golpe Supremo Divino: +**70%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **50%**",
+
+      "🧠 Mente Cósmica Lendária: +**80%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **70%**",
+      "🦋 Agilidade Absoluta: +**90%** de esquiva\n ㅤ➥ +**60** pontos de Agilidade em combate",
+      "🔥 Fogo Eterno Divino: +**150%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+400%** após **15** ataques",
+      "❄️ Congelamento Final Supremo: +**120%** de dano de gelo\n ㅤ➥ **50%** chance de congelar inimigo por **2** turnos",
+      "⚡ Faísca Divina: +**60%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Lendário: **65%** chance de envenenar inimigo\n ㅤ➥ Dura **15** turnos e causa **120** de dano por turno",
+      "🛡️ Barreira Divina: +**150%** de resistência física\n ㅤ➥ Escudo ativo de **1000** pontos",
+      "💫 Aura Lendária Absoluta: +**150%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **70%** de HP por acerto",
+      "🌀 Tornado Divino: +**60%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+      "🌿 Raízes Eternas Lendárias: **55%** chance de enraizar inimigo\n ㅤ➥ Drena **50%** de HP por turno enquanto enraizado",
+
+      "🦉 Sabedoria Divina: +**75** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **70%** à noite",
+      "🦶 Passos Fantasmagóricos Lendários: +**95%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Divina: Cada ataque acumula carga elétrica\n ㅤ➥ **80** cargas liberam raio que causa **650** de dano",
+      "💥 Impacto Divino: +**85%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **50%**",
+      "🔥 Chama Final Divina: **65%** chance de incendiar inimigo por **4** turnos\n ㅤ➥ Causa **80** de dano por turno",
+      "❄️ Gelo Lendário Absoluto: +**60%** de chance de congelar inimigo\n ㅤ➥ Dura **8** turnos",
+      "⚡ Raios Lendários: **55%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Divino: +**50%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **50%**",
+      "💫 Energia Cósmica Divina: +**120%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🛡️ Guardião Divino: +**150%** de resistência mágica\n ㅤ➥ Escudo ativo de **1200** pontos",
+    
+      "🔥 Labareda da Eternidade: +**130%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **45%** por acúmulo (máx. **15**)",
+      "❄️ Congelamento da Eternidade: +**120%** de dano de gelo\n ㅤ➥ **65%** chance de congelar inimigos por **4** turnos",
+      "⚡ Choque da Eternidade: **75%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **650** de dano adicional",
+      "🌑 Sombra Eterna: +**100%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **8** turnos",
+      "💫 Luz Divina Suprema: +**140%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **75%** de HP por acerto",
+      "🩸 Sifão Supremo: **70%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **70%** quando HP <50%",
+      "🦾 Punho da Eternidade Absoluta: +**160%** de dano desarmado\n ㅤ➥ Empurra inimigos **25** metros",
+      "🌊 Tsunami Lendário: +**80%** de velocidade de ataque\n ㅤ➥ **65%** chance de atingir inimigos adjacentes",
+      "🦅 Olhar de Águia Supremo: +**85%** de alcance e precisão\n ㅤ➥ Ignora **85%** da armadura do alvo",
+      "⚔️ Golpe Supremo da Eternidade: +**75%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **55%**",
+
+      "🧠 Mente Lendária: +**85%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **75%**",
+      "🦋 Agilidade Eterna: +**95%** de esquiva\n ㅤ➥ +**65** pontos de Agilidade em combate",
+      "🔥 Fogo da Eternidade: +**160%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+450%** após **15** ataques",
+      "❄️ Congelamento Absoluto: +**125%** de dano de gelo\n ㅤ➥ **55%** chance de congelar inimigo por **2** turnos",
+      "⚡ Faísca Suprema: +**65%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Lendário Absoluto: **70%** chance de envenenar inimigo\n ㅤ➥ Dura **16** turnos e causa **130** de dano por turno",
+      "🛡️ Barreira Suprema: +**160%** de resistência física\n ㅤ➥ Escudo ativo de **1100** pontos",
+      "💫 Aura Lendária Suprema: +**160%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **75%** de HP por acerto",
+      "🌀 Tornado Supremo: +**65%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+      "🌿 Raízes Eternas Absolutas: **60%** chance de enraizar inimigo\n ㅤ➥ Drena **55%** de HP por turno enquanto enraizado",
+
+      "🦉 Sabedoria Suprema: +**80** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **75%** à noite",
+      "🦶 Passos Fantasmagóricos Lendários: +**100%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Suprema: Cada ataque acumula carga elétrica\n ㅤ➥ **85** cargas liberam raio que causa **700** de dano",
+      "💥 Impacto Lendário: +**90%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **55%**",
+      "🔥 Chama Suprema: **70%** chance de incendiar inimigo por **4** turnos\n ㅤ➥ Causa **90** de dano por turno",
+      "❄️ Gelo Supremo: +**65%** de chance de congelar inimigo\n ㅤ➥ Dura **8** turnos",
+      "⚡ Raios Lendários Absolutos: **60%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Supremo: +**55%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **55%**",
+      "💫 Energia Cósmica Suprema: +**130%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🛡️ Guardião Lendário: +**160%** de resistência mágica\n ㅤ➥ Escudo ativo de **1250** pontos",
+    
+      "🔥 Inferno Supremo: +**170%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **50%** por acúmulo (máx. **20**)",
+      "❄️ Congelamento Absoluto Lendário: +**150%** de dano de gelo\n ㅤ➥ **70%** chance de congelar inimigos por **5** turnos",
+      "⚡ Choque Cósmico: **80%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **750** de dano adicional",
+      "🌑 Sombra Final Suprema: +**120%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **10** turnos",
+      "💫 Luz Divina Final: +**160%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **80%** de HP por acerto",
+      "🩸 Sifão Absoluto: **75%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **75%** quando HP <50%",
+      "🦾 Punho da Eternidade Final: +**180%** de dano desarmado\n ㅤ➥ Empurra inimigos **30** metros",
+      "🌊 Tsunami Supremo: +**90%** de velocidade de ataque\n ㅤ➥ **70%** chance de atingir inimigos adjacentes",
+      "🦅 Olhar de Águia Final: +**95%** de alcance e precisão\n ㅤ➥ Ignora **90%** da armadura do alvo",
+      "⚔️ Golpe da Eternidade Final: +**80%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **60%**",
+
+      "🧠 Mente Suprema Lendária: +**90%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **80%**",
+      "🦋 Agilidade Suprema: +**100%** de esquiva\n ㅤ➥ +**70** pontos de Agilidade em combate",
+      "🔥 Fogo Final Divino: +**180%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+500%** após **15** ataques",
+      "❄️ Congelamento Final Absoluto: +**140%** de dano de gelo\n ㅤ➥ **60%** chance de congelar inimigo por **3** turnos",
+      "⚡ Faísca Final: +**70%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Final: **75%** chance de envenenar inimigo\n ㅤ➥ Dura **18** turnos e causa **150** de dano por turno",
+      "🛡️ Barreira Final: +**180%** de resistência física\n ㅤ➥ Escudo ativo de **1400** pontos",
+      "💫 Aura Final Suprema: +**180%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **85%** de HP por acerto",
+      "🌀 Tornado Final: +**70%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+      "🌿 Raízes Eternas Final: **65%** chance de enraizar inimigo\n ㅤ➥ Drena **60%** de HP por turno enquanto enraizado",
+
+      "🦉 Sabedoria Final: +**85** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **80%** à noite",
+      "🦶 Passos Fantasmagóricos Final: +**105%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Final Divina: Cada ataque acumula carga elétrica\n ㅤ➥ **90** cargas liberam raio que causa **800** de dano",
+      "💥 Impacto Final: +**100%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **60%**",
+      "🔥 Chama Final Suprema: **75%** chance de incendiar inimigo por **5** turnos\n ㅤ➥ Causa **100** de dano por turno",
+      "❄️ Gelo Final: +**70%** de chance de congelar inimigo\n ㅤ➥ Dura **10** turnos",
+      "⚡ Raios Final Absoluto: **65%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Final Supremo: +**60%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **60%**",
+      "💫 Energia Cósmica Final: +**150%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🛡️ Guardião Final Supremo: +**180%** de resistência mágica\n ㅤ➥ Escudo ativo de **1500** pontos"
+    ],
+DamageBase: 150,
+                TicketCost: 15
+            },
+  "mythic": {
+    "passives": [
+      "🔥 Inferno Cósmico: +**200%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **60%** por acúmulo (máx. **25**)",
+      "❄️ Congelamento Cósmico: +**180%** de dano de gelo\n ㅤ➥ **75%** chance de congelar inimigos por **6** turnos",
+      "⚡ Choque Divino Absoluto: **85%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **900** de dano adicional",
+      "🌑 Sombra Suprema: +**150%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **12** turnos",
+      "💫 Luz Divina Cósmica: +**200%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **90%** de HP por acerto",
+      "🩸 Sifão Cósmico: **80%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **80%** quando HP <50%",
+      "🦾 Punho Cósmico: +**220%** de dano desarmado\n ㅤ➥ Empurra inimigos **35** metros",
+      "🌊 Tsunami Cósmico: +**100%** de velocidade de ataque\n ㅤ➥ **75%** chance de atingir inimigos adjacentes",
+      "🦅 Olhar de Águia Cósmico: +**110%** de alcance e precisão\n ㅤ➥ Ignora **95%** da armadura do alvo",
+      "⚔️ Golpe Cósmico Supremo: +**90%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **70%**",
+
+      "🧠 Mente Divina: +**100%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **85%**",
+      "🦋 Agilidade Cósmica: +**120%** de esquiva\n ㅤ➥ +**80** pontos de Agilidade em combate",
+      "🔥 Fogo Absoluto Cósmico: +**220%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+600%** após **20** ataques",
+      "❄️ Congelamento Absoluto Supremo: +**170%** de dano de gelo\n ㅤ➥ **65%** chance de congelar inimigo por **4** turnos",
+      "⚡ Faísca Cósmica: +**75%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Cósmico: **80%** chance de envenenar inimigo\n ㅤ➥ Dura **20** turnos e causa **180** de dano por turno",
+      "🛡️ Barreira Cósmica: +**200%** de resistência física\n ㅤ➥ Escudo ativo de **1600** pontos",
+      "💫 Aura Cósmica Suprema: +**200%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **90%** de HP por acerto",
+      "🌀 Tornado Cósmico: +**75%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+      "🌿 Raízes Cósmicas: **70%** chance de enraizar inimigo\n ㅤ➥ Drena **65%** de HP por turno enquanto enraizado",
+
+      "🦉 Sabedoria Cósmica: +**95** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **85%** à noite",
+      "🦶 Passos Fantasmagóricos Cósmicos: +**120%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Cósmica: Cada ataque acumula carga elétrica\n ㅤ➥ **100** cargas liberam raio que causa **900** de dano",
+      "💥 Impacto Cósmico: +**120%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **65%**",
+      "🔥 Chama Cósmica Suprema: **80%** chance de incendiar inimigo por **6** turnos\n ㅤ➥ Causa **120** de dano por turno",
+      "❄️ Gelo Cósmico: +**75%** de chance de congelar inimigo\n ㅤ➥ Dura **12** turnos",
+      "⚡ Raios Cósmicos: **70%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Cósmico: +**65%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **65%**",
+      "💫 Energia Cósmica Absoluta: +**200%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🛡️ Guardião Cósmico: +**200%** de resistência mágica\n ㅤ➥ Escudo ativo de **1800** pontos",
+
+      "🔥 Labareda Cósmica: +**210%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **65%** por acúmulo (máx. **25**)",
+      "❄️ Congelamento Absoluto: +**190%** de dano de gelo\n ㅤ➥ **80%** chance de congelar inimigos por **6** turnos",
+      "⚡ Choque Divino Cósmico: **90%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **950** de dano adicional",
+      "🌑 Sombra Suprema Cósmica: +**160%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **12** turnos",
+      "💫 Luz Divina Absoluta: +**210%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **95%** de HP por acerto",
+      "🩸 Sifão Absoluto: **85%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **85%** quando HP <50%",
+      "🦾 Punho Cósmico Absoluto: +**230%** de dano desarmado\n ㅤ➥ Empurra inimigos **40** metros",
+      "🌊 Tsunami Absoluto: +**110%** de velocidade de ataque\n ㅤ➥ **75%** chance de atingir inimigos adjacentes",
+      "🦅 Olhar de Águia Supremo: +**120%** de alcance e precisão\n ㅤ➥ Ignora **95%** da armadura do alvo",
+      "⚔️ Golpe Absoluto Supremo: +**95%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **75%**",
+
+      "🧠 Mente Suprema Absoluta: +**110%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **90%**",
+      "🦋 Agilidade Cósmica Suprema: +**130%** de esquiva\n ㅤ➥ +**85** pontos de Agilidade em combate",
+      "🔥 Fogo Supremo Cósmico: +**240%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+650%** após **20** ataques",
+      "❄️ Congelamento Supremo Absoluto: +**180%** de dano de gelo\n ㅤ➥ **70%** chance de congelar inimigo por **5** turnos",
+      "⚡ Faísca Absoluta: +**80%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Supremo: **85%** chance de envenenar inimigo\n ㅤ➥ Dura **22** turnos e causa **200** de dano por turno",
+      "🛡️ Barreira Absoluta: +**220%** de resistência física\n ㅤ➥ Escudo ativo de **1700** pontos",
+      "💫 Aura Suprema Absoluta: +**220%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **95%** de HP por acerto",
+      "🌀 Tornado Supremo: +**80%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+      "🌿 Raízes Absolutas: **75%** chance de enraizar inimigo\n ㅤ➥ Drena **70%** de HP por turno enquanto enraizado",
+
+      "🦉 Sabedoria Absoluta: +**100** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **90%** à noite",
+      "🦶 Passos Fantasmagóricos Absolutos: +**130%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Suprema: Cada ataque acumula carga elétrica\n ㅤ➥ **110** cargas liberam raio que causa **1000** de dano",
+      "💥 Impacto Supremo: +**130%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **70%**",
+      "🔥 Chama Absoluta Suprema: **85%** chance de incendiar inimigo por **6** turnos\n ㅤ➥ Causa **130** de dano por turno",
+      "❄️ Gelo Absoluto: +**80%** de chance de congelar inimigo\n ㅤ➥ Dura **12** turnos",
+      "⚡ Raios Absolutos: **75%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Absoluto: +**70%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **70%**",
+      "💫 Energia Cósmica Absoluta: +**220%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🛡️ Guardião Supremo: +**220%** de resistência mágica\n ㅤ➥ Escudo ativo de **1900** pontos",
+    
+      "🔥 Labareda Absoluta: +**250%** de dano de fogo\n ㅤ➥ Ataques consecutivos aumentam dano em **70%** por acúmulo (máx. **30**)",
+      "❄️ Congelamento Supremo: +**210%** de dano de gelo\n ㅤ➥ **85%** chance de congelar inimigos por **7** turnos",
+      "⚡ Choque Divino Final: **95%** chance de paralisar inimigos próximos\n ㅤ➥ Causa **1100** de dano adicional",
+      "🌑 Sombra Final: +**180%** de dano contra inimigos abaixo de **50%** HP\n ㅤ➥ Dura **15** turnos",
+      "💫 Luz Divina Final: +**250%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **100%** de HP por acerto",
+      "🩸 Sifão Final Absoluto: **90%** chance de roubar vida em ataques críticos\n ㅤ➥ Cura adicional de **90%** quando HP <50%",
+      "🦾 Punho Final: +**270%** de dano desarmado\n ㅤ➥ Empurra inimigos **45** metros",
+      "🌊 Tsunami Final: +**120%** de velocidade de ataque\n ㅤ➥ **80%** chance de atingir inimigos adjacentes",
+      "🦅 Olhar de Águia Final: +**130%** de alcance e precisão\n ㅤ➥ Ignora **100%** da armadura do alvo",
+      "⚔️ Golpe Final Supremo: +**100%** de chance de crítico\n ㅤ➥ Ataques críticos reduzem armadura inimiga em **80%**",
+
+      "🧠 Mente Final: +**120%** de regeneração de mana\n ㅤ➥ Reduz custo de habilidades em **95%**",
+      "🦋 Agilidade Final: +**140%** de esquiva\n ㅤ➥ +**90** pontos de Agilidade em combate",
+      "🔥 Fogo Final Supremo: +**260%** de dano de fogo acumulativo\n ㅤ➥ Máx. **+700%** após **25** ataques",
+      "❄️ Congelamento Final Supremo: +**200%** de dano de gelo\n ㅤ➥ **75%** chance de congelar inimigo por **5** turnos",
+      "⚡ Faísca Final Absoluta: +**85%** de chance de paralisar inimigo\n ㅤ➥ Só ativa em ataques críticos",
+      "🩸 Veneno Final Supremo: **90%** chance de envenenar inimigo\n ㅤ➥ Dura **25** turnos e causa **220** de dano por turno",
+      "🛡️ Barreira Final Suprema: +**240%** de resistência física\n ㅤ➥ Escudo ativo de **2000** pontos",
+      "💫 Aura Final Absoluta: +**240%** de dano mágico contra mortos-vivos e demônios\n ㅤ➥ Cura **100%** de HP por acerto",
+      "🌀 Tornado Final Absoluto: +**85%** de chance de acertar múltiplos inimigos\n ㅤ➥ Aplica empurrão e debuff de armadura",
+      "🌿 Raízes Finais: **80%** chance de enraizar inimigo\n ㅤ➥ Drena **75%** de HP por turno enquanto enraizado",
+
+      "🦉 Sabedoria Final Absoluta: +**110** pontos de Sabedoria\n ㅤ➥ Reduz custo de magias em **95%** à noite",
+      "🦶 Passos Fantasmagóricos Finais: +**150%** de esquiva\n ㅤ➥ Reduz chance de detecção inimiga",
+      "⚡ Estática Final Absoluta: Cada ataque acumula carga elétrica\n ㅤ➥ **120** cargas liberam raio que causa **1200** de dano",
+      "💥 Impacto Final Absoluto: +**150%** de dano em ataques pesados\n ㅤ➥ Reduz recuo do alvo em **75%**",
+      "🔥 Chama Final Absoluta: **90%** chance de incendiar inimigo por **7** turnos\n ㅤ➥ Causa **150** de dano por turno",
+      "❄️ Gelo Final Absoluto: +**85%** de chance de congelar inimigo\n ㅤ➥ Dura **15** turnos",
+      "⚡ Raios Finais: **80%** chance de paralisar inimigos próximos",
+      "🌑 Eclipse Final Absoluto: +**75%** de chance de crítico\n ㅤ➥ Reduz defesa inimiga em **75%**",
+      "💫 Energia Cósmica Final Absoluta: +**250%** de dano mágico\n ㅤ➥ Dobra efeitos de buffs mágicos ativos",
+      "🛡️ Guardião Final Absoluto: +**250%** de resistência mágica\n ㅤ➥ Escudo ativo de **2200** pontos"
+    ],
+DamageBase: 250,
+                TicketCost: 30
+            }
+}
+
+
+
+        // State
+        let currentItem = null;
+        let additionalPassivesCount = 0;
+
+        // DOM elements
+        const raritySelect = document.getElementById('rarity-select');
+        const createSelectedBtn = document.getElementById('create-selected');
+        const createRandomBtn = document.getElementById('create-random');
+        const itemDisplay = document.getElementById('item-display');
+        const itemNameElement = document.getElementById('item-name');
+        const itemDamageElement = document.getElementById('item-damage');
+        const passivesListElement = document.getElementById('passives-list');
+        const appearancePromptElement = document.getElementById('appearance-prompt');
+        const addPassiveBtn = document.getElementById('add-passive');
+        const copyPromptBtn = document.getElementById('copy-prompt');
+        const copyItemBtn = document.getElementById('copy-item');
+        const rarityDisplay = document.getElementById('rarity-display');
+        const currentCostElement = document.getElementById('current-cost');
+        const rarityValueElement = document.getElementById('rarity-value');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createSelectedBtn.addEventListener('click', createSelectedWeapon);
+            createRandomBtn.addEventListener('click', createRandomWeapon);
+            addPassiveBtn.addEventListener('click', addPassive);
+            copyPromptBtn.addEventListener('click', copyPrompt);
+            copyItemBtn.addEventListener('click', copyItem);
+        });
+
+        // Main functions
+        function createSelectedWeapon() {
+            const rarity = raritySelect.value;
+            createWeapon(rarity);
+        }
+
+        function createRandomWeapon() {
+            const rarity = getRandomRarity();
+            createWeapon(rarity);
+        }
+
+        function createWeapon(rarity) {
+    additionalPassivesCount = 0;
+    currentItem = {
+        weaponType: weaponTypes[Math.floor(Math.random() * weaponTypes.length)],
+        rarity,
+        passives: [],
+        damage: 0,
+        ticketCost: 0
+    };
+
+    generateItemName();
+    generateDamage();
+    generateInitialPassives();
+    calculateTicketCost();
+    generateAppearancePrompt();
+
+    updateItemDisplay();
+    itemDisplay.style.display = 'block';
+    
+    // Update rarity display with smooth transition
+    rarityValueElement.textContent = rarity;
+    rarityDisplay.style.display = 'flex';
+    setTimeout(() => {
+        rarityDisplay.classList.add('visible');
+    }, 10);
+}
+
+        function addPassive() {
+            if (!currentItem || currentItem.passives.length >= 10) return;
+
+            const availablePassives = weaponData[currentItem.rarity].passives
+                .filter(p => !currentItem.passives.includes(p));
+
+            if (availablePassives.length === 0) return;
+
+            const randomPassive = availablePassives[Math.floor(Math.random() * availablePassives.length)];
+            currentItem.passives.push(randomPassive);
+            additionalPassivesCount++;
+
+            calculateTicketCost();
+            updateItemDisplay();
+        }
+
+        // Helper functions
+        function getRandomRarity() {
+            const random = Math.random() * 100;
+            if (random < 40) return 'common';
+            if (random < 70) return 'rare';
+            if (random < 90) return 'epic';
+            if (random < 99) return 'legendary';
+            return 'mythic';
+        }
+
+        function generateItemName() {
+    // dicionário de tradução (inglês -> português)
+    const weaponTranslations = {
+        "Sword": "Espada",
+        "Axe": "Machado",
+        "Mace": "Maça",
+        "Dagger": "Adaga",
+        "Greatsword": "Espada Larga",
+        "Bow": "Arco",
+        "Crossbow": "Besta",
+        "Staff": "Cajado",
+        "Wand": "Varinha",
+        "Scepter": "Cetro",
+        "Hammer": "Martelo",
+        "Spear": "Lança",
+        "Halberd": "Alabarda",
+        "Glaive": "Glaive",
+        "Rapier": "Rapieira",
+        "Scimitar": "Cimitarra",
+        "Katana": "Katana",
+        "Whip": "Chicote",
+        "Flail": "Mangual",
+        "Scythe": "Foice",
+        "Chakram": "Chakram",
+        "Shield": "Escudo",
+        "Gauntlet": "Manopla",
+        "Claw": "Garra",
+        "Trident": "Tridente",
+        "Blowgun": "Zarabatana",
+        "Kusarigama": "Kusarigama"
+    };
+
+    // prefixes / suffixes (mesmo conteúdo que você já tem)
+    const prefixes = {
+        common: [
+            "Rusty", "Chipped", "Worn", "Simple", "Sturdy", "Plain", "Battered",
+            "Faded", "Old", "Weathered", "Dull", "Basic", "Humble", "Scarred",
+            "Notched", "Grimy", "Pitted", "Flea-bitten", "Mended", "Patched",
+            "Bent", "Twisted", "Crooked", "Jagged", "Rough", "Coarse", "Crude",
+            "Flimsy", "Shoddy", "Tarnished", "Dented", "Scuffed", "Fractured"
+        ],
+        rare: [
+            "Honor's", "Valor's", "Glory's", "Pride's", "Grace's", "Virtue's",
+            "Truth's", "Oathkeeper", "Vow", "Promise", "Boon", "Gift", "Boon",
+            "Blessing", "Favor", "Hope's", "Dream's", "Light's", "Dawn's",
+            "Twilight's", "Evening's", "Morning's", "Noon's", "Dusk's", "Night's",
+            "Moon's", "Star's", "Sun's", "Sky's", "Cloud's", "Wind's", "Breeze's"
+        ],
+        epic: [
+            "Thunder", "Lightning", "Storm", "Tempest", "Hurricane", "Cyclone",
+            "Blizzard", "Inferno", "Flame", "Ember", "Spark", "Torch", "Beacon",
+            "Fang", "Claw", "Talon", "Jaw", "Bite", "Sting", "Barb", "Spike",
+            "Horn", "Tusk", "Quill", "Thorn", "Bramble", "Briar", "Vine", "Root"
+        ],
+        legendary: [
+            "Doom", "Ruin", "Destiny", "Fate", "Death", "Reaper", "Grave",
+            "Tomb", "Crypt", "Bone", "Skull", "Spirit", "Phantom", "Specter",
+            "Wraith", "Ghoul", "Banshee", "Revenant", "Lich", "Necro", "Undying",
+            "Eternal", "Infinite", "Timeless", "Ageless", "Endless", "Boundless"
+        ],
+        mythic: [
+            "Infinity", "Eternity", "Void", "Abyss", "Cosmos", "Reality",
+            "Existence", "Creation", "Genesis", "Oblivion", "Annihilation",
+            "Extinction", "Apocalypse", "Armageddon", "Ragnarok", "Judgment",
+            "Reckoning", "Damnation", "Salvation", "Ascension", "Transcendence",
+            "Omniscience", "Omnipotence", "Ubiquity", "Paradox", "Enigma",
+            "Conundrum", "Mystery", "Puzzle", "Riddle", "Legend", "Myth"
+        ]
+    };
+    const suffixes = {
+        common: [
+            "Bane", "End", "Edge", "Point", "Tip", "Strike", "Swing", "Blow",
+            "Poke", "Prod", "Nudge", "Push", "Shove", "Whack", "Thump", "Smack",
+            "Tap", "Pat", "Brush", "Graze", "Scratch", "Nick", "Cut", "Slash"
+        ],
+        rare: [
+            "Kiss", "Embrace", "Caress", "Touch", "Glance", "Gaze", "Stare",
+            "Whisper", "Murmur", "Sigh", "Breath", "Song", "Chant", "Hymn",
+            "Prayer", "Oath", "Vow", "Pledge", "Bond", "Promise", "Pact",
+            "Pact", "Covenant", "Treaty", "Accord", "Bargain", "Deal"
+        ],
+        epic: [
+            "Fury", "Wrath", "Rage", "Anger", "Hate", "Malice", "Spite",
+            "Vengeance", "Retribution", "Justice", "Judgment", "Sentence",
+            "Decree", "Edict", "Command", "Order", "Mandate", "Dictate",
+            "Proclamation", "Announcement", "Declaration", "Manifesto"
+        ],
+        legendary: [
+            "Twilight", "Eclipse", "Equinox", "Solstice", "Conjunction",
+            "Alignment", "Syzygy", "Penumbra", "Umbra", "Corona", "Aurora",
+            "Nova", "Supernova", "Quasar", "Pulsar", "Singularity", "Vortex",
+            "Maelstrom", "Whirlpool", "Tornado", "Typhoon", "Monsoon"
+        ],
+        mythic: [
+            "Alpha", "Omega", "Genesis", "Revelation", "Exodus", "Leviticus",
+            "Deuteronomy", "Chronicle", "Testament", "Gospel", "Scripture",
+            "Prophecy", "Oracle", "Augury", "Portent", "Omen", "Harbinger",
+            "Presage", "Forerunner", "Precursor", "Herald", "Messenger"
+        ]
+    };
+
+    // garante raridade válida
+    const rarity = (currentItem && currentItem.rarity) ? currentItem.rarity : 'common';
+    const rarityPrefixes = prefixes[rarity] || prefixes.common;
+    const raritySuffixes = suffixes[rarity] || suffixes.common;
+
+    // seleciona prefix/suffix aleatórios
+    const randomPrefix = rarityPrefixes[Math.floor(Math.random() * rarityPrefixes.length)];
+    const randomSuffix = raritySuffixes[Math.floor(Math.random() * raritySuffixes.length)];
+
+    // pega o tipo em inglês que já está em currentItem.weaponType (não sobrescreve)
+    // se não existir, tenta pegar da const global weaponTypes (se houver)
+    let weaponTypeEn = (currentItem && currentItem.weaponType) ? currentItem.weaponType : undefined;
+    if (!weaponTypeEn && typeof weaponTypes !== 'undefined' && Array.isArray(weaponTypes) && weaponTypes.length > 0) {
+        weaponTypeEn = weaponTypes[Math.floor(Math.random() * weaponTypes.length)];
+    }
+    // tenta casar ignorando maiúsculas/minúsculas (por segurança)
+    if (weaponTypeEn) {
+        const foundKey = Object.keys(weaponTranslations).find(k => k.toLowerCase() === String(weaponTypeEn).toLowerCase());
+        weaponTypeEn = foundKey || weaponTypeEn;
+    } else {
+        weaponTypeEn = 'Sword'; // fallback seguro
+    }
+
+    // tradução (mantém o original em currentItem.weaponType)
+    const weaponTypePT = weaponTranslations[weaponTypeEn] || weaponTypeEn;
+
+    // 50% chance para nome de uma palavra ou prefix+suffix
+    const useSingleWord = Math.random() > 0.5;
+
+    if (useSingleWord) {
+        const usePrefix = Math.random() > 0.5;
+        currentItem.name = `${usePrefix ? randomPrefix : randomSuffix} (${weaponTypePT})`;
+    } else {
+        // evita duplicar "'s" caso o prefix já contenha
+        let prefixForCombo = randomPrefix;
+        if (!prefixForCombo.endsWith("'s")) prefixForCombo = `${prefixForCombo}'s`;
+        currentItem.name = `${prefixForCombo} ${randomSuffix} (${weaponTypePT})`;
+    }
+
+    // opcional: guarda a versão traduzida separada (não sobrescreve currentItem.weaponType)
+    currentItem.weaponTypePT = weaponTypePT;
+
+    return currentItem.name;
+}
+
+        function generateDamage() {
+            const base = weaponData[currentItem.rarity].DamageBase;
+            const min = Math.floor(base / 2);
+            currentItem.damage = Math.floor(Math.random() * (base - min + 1)) + min;
+        }
+
+        function generateInitialPassives() {
+            const passives = [...weaponData[currentItem.rarity].passives];
+            currentItem.passives = [];
+            
+            for (let i = 0; i < 3 && passives.length > 0; i++) {
+                const index = Math.floor(Math.random() * passives.length);
+                currentItem.passives.push(passives.splice(index, 1)[0]);
+            }
+        }
+
+        function calculateTicketCost() {
+            const base = weaponData[currentItem.rarity].TicketCost;
+            const mult = {
+                common: 2, rare: 5, epic: 10, legendary: 20, mythic: 30
+            }[currentItem.rarity];
+            
+            currentItem.ticketCost = base + Math.ceil(mult * additionalPassivesCount * 1.5);
+            currentCostElement.textContent = currentItem.ticketCost;
+        }
+
+        function generateAppearancePrompt() {
+    // Colors (120+ options)
+    const colors = [
+        // Blacks/Darks
+        "black", "onyx", "ebony", "obsidian", "void-black", "midnight", "shadow", "pitch-black", 
+        "abyssal black", "charcoal", "raven", "jet black", "ink-black", "void-touched", "starless night",
+        "dusky", "umbral", "soot-black", "blackened", "darkened", "black as night", "black as coal",
+        
+        // Metallics
+        "dark steel", "blackened steel", "tarnished silver", "burnished iron", "gunmetal", "cold iron",
+        "weathered bronze", "oxidized copper", "dark brass", "shadow-forged", "dull iron", "smoked steel",
+        "aged metal", "black iron", "soot-covered", "oil-darkened", "smoky gray", "ashen", "stormcloud gray",
+        
+        // Reds
+        "blood red", "crimson", "dried blood", "rust-colored", "sanguine", "scarlet", "gore-stained",
+        "wine-dark", "maroon", "brick red", "ember-red", "flame-kissed", "blood-rusted", "weeping red",
+        
+        // Blues/Purples
+        "midnight blue", "indigo", "deep purple", "twilight-hued", "storm blue", "void-purple", "royal purple",
+        "shadow blue", "abyssal blue", "deep violet", "dusky lavender", "etheric blue", "faded navy",
+        
+        // Greens
+        "emerald green", "forest green", "deep jade", "verdigris", "mossy", "olive drab", "sickly green",
+        "venom-green", "toxic green", "swamp-colored", "malachite", "deep teal", "witchlight green",
+        
+        // Other colors
+        "gold-trimmed", "silvered", "bone-white", "ivory", "pale", "ghostly", "spectral", "faded",
+        "multicolored", "iridescent", "prismatic", "shifting", "metallic", "lustrous", "glistening",
+        "pearlescent", "opalescent", "crystalline", "glowing", "phosphorescent", "radiant", "gleaming",
+        "burnished", "polished", "mirrored", "reflective", "shining", "dull", "matte", "rough", "weathered"
+    ];
+
+    // Styles (120+ options)
+    const styles = [
+        // General styles
+        "mysterious", "intricately designed", "ancient", "ornate", "sleek", "menacing", "elegant",
+        "brutal", "otherworldly", "runed", "forbidding", "sinister", "eldritch", "arcane", "esoteric",
+        "occult", "mystical", "enigmatic", "cryptic", "unsettling", "eerie", "haunting", "ominous",
+        
+        // Craftsmanship
+        "exquisitely crafted", "masterfully forged", "artistically made", "precisely engineered",
+        "flawlessly constructed", "impeccably designed", "painstakingly created", "meticulously shaped",
+        "expertly fashioned", "skillfully wrought", "carefully assembled", "delicately formed",
+        
+        // Age/Wear
+        "timeworn", "age-old", "centuries-old", "ancient-looking", "weathered", "battle-scarred",
+        "bloodstained", "notched", "worn", "veteran", "seasoned", "well-used", "relic-like", "antique",
+        
+        // Shape/Form
+        "curved", "serpentine", "angular", "jagged", "spiked", "barbed", "hooked", "twisted", "spiraled",
+        "coiled", "sinuous", "wavy", "serrated", "scalloped", "fluted", "grooved", "ribbed", "chiseled",
+        
+        // Magical qualities
+        "glowing faintly", "pulsing slowly", "humming softly", "shimmering", "glistening", "radiating power",
+        "energy-wrapped", "aura-cloaked", "magic-infused", "spellbound", "enchanted", "bewitched",
+        "charmed", "hexed", "cursed", "blessed", "hallowed", "consecrated", "desecrated", "unholy",
+        
+        // Material qualities
+        "crystalline", "glass-like", "obsidian-smooth", "metallic", "stone-carved", "bone-inlaid",
+        "ivory-handled", "gem-encrusted", "jeweled", "diamond-studded", "gold-filigreed", "silver-chased",
+        "bronze-mounted", "iron-bound", "steel-reinforced", "leather-wrapped", "silk-bound", "velvet-lined",
+        
+        // Origins
+        "dwarven-made", "elven-crafted", "orc-forged", "demon-wrought", "angelic", "celestial",
+        "infernal", "abyssal", "eldritch", "primordial", "elemental", "draconic", "fey-touched",
+        "void-born", "star-forged", "moon-blessed", "sun-kissed"
+    ];
+
+    // Details (120+ options)
+    const details = [
+        // Engravings/Decorations
+        "with golden engravings", "with glowing runes", "with bone inlays", "with celestial motifs",
+        "with demonic sigils", "with ancient glyphs", "with occult symbols", "with sacred geometry",
+        "with intricate scrollwork", "with vine-like patterns", "with dragon motifs", "with skull designs",
+        "with spiderweb etchings", "with thorn carvings", "with flame patterns", "with lightning bolts",
+        "with star charts", "with moon phases", "with sunbursts", "with eye motifs", "with handprints",
+        "with claw marks", "with teeth patterns", "with scale impressions", "with feather designs",
+        
+        // Physical Features
+        "with serrated edges", "with razor-sharp teeth", "with hooked barbs", "with wicked points",
+        "with cruel curves", "with jagged notches", "with blood grooves", "with finger rests",
+        "with knuckle guards", "with counterweights", "with balance marks", "with worn grips",
+        "with leather wrappings", "with chain links", "with spike clusters", "with bladed protrusions",
+        "with cruel hooks", "with executioner's marks", "with warrior's scars", "with duelist's nicks",
+        
+        // Magical Effects
+        "that seems to absorb light", "with a faint aura", "that hums with power", "that vibrates slightly",
+        "that feels unnaturally cold", "that's warm to the touch", "that tingles when held", "that whispers",
+        "that glows faintly in the dark", "that casts strange shadows", "that distorts the air around it",
+        "that makes nearby flames flicker", "that causes mild nausea", "that induces headaches",
+        "that makes hair stand on end", "that repels insects", "that attracts dust", "that never gets dirty",
+        "that's always slightly moist", "that's perpetually dry", "that changes color in moonlight",
+        
+        // Material Combinations
+        "with ivory accents", "with ebony trim", "with silver filigree", "with gold leafing",
+        "with platinum inlays", "with copper wiring", "with brass fittings", "with steel reinforcements",
+        "with iron bands", "with leather straps", "with silk cords", "with velvet padding",
+        "with gemstone eyes", "with pearl inlays", "with diamond dust", "with ruby chips",
+        "with emerald fragments", "with sapphire splinters", "with opal flecks", "with amethyst shards",
+        
+        // Mystical Properties
+        "with a mind of its own", "that seems to watch you", "that remembers its victims",
+        "that hungers for battle", "that thirsts for blood", "that sings during combat",
+        "that laughs at misfortune", "that warns of danger", "that predicts weather",
+        "that points north", "that glows near enemies", "that vibrates when danger approaches",
+        "that becomes heavier when lied to", "that lightens when truth is spoken",
+        "that resists being sheathed when angry", "that leaps to hand when needed"
+    ];
+
+    // Materials (120+ options)
+    const materials = [
+        // Metals/Alloys
+        "forged from meteoric iron", "crafted from dragon bone", "made of an unknown alloy",
+        "carved from obsidian", "tempered in demon blood", "cast from star metal",
+        "folded a thousand times", "quenched in holy water", "cooled in liquid shadow",
+        "hardened in elemental fire", "annealed in dragon's breath", "bathed in moonlight",
+        "blessed by sun priests", "cursed by witch kings", "infused with phoenix ashes",
+        "mixed with mithril", "alloyed with adamantine", "combined with orichalcum",
+        "blended with darksteel", "forged with void essence",
+        
+        // Magical Processes
+        "enchanted under a blood moon", "consecrated by high priests", "desecrated in unholy rites",
+        "awakened by ancient spells", "bound with elemental spirits", "infused with ley line energy",
+        "charged during astral alignments", "blessed by celestial beings", "cursed by dying gods",
+        "forged in the heart of a volcano", "cooled in the tears of angels", "quenched in martyr's blood",
+        "tempered in the River Styx", "hardened in the fires of Muspelheim", "chilled in Jotunheim's winds",
+        
+        // Rare Materials
+        "made from a fallen star", "carved from a dying god's bone", "forged from a demon's heart",
+        "crafted from a titan's tooth", "shaped from a world tree's branch", "formed from condensed shadow",
+        "woven from nightmare stuff", "solidified from ghostly essence", "frozen from liquid time",
+        "crystallized from pure magic", "distilled from cosmic energy", "harvested from the void between worlds",
+        "plucked from the dreams of madmen", "stolen from the gods' armory", "recovered from a lost civilization",
+        
+        // Legendary Origins
+        "once wielded by a legendary hero", "formerly owned by a mad king", "lost by an archmage",
+        "discarded by a death god", "gifted by the fae queen", "stolen from a dragon's hoard",
+        "recovered from a demon's corpse", "found in a ruined temple", "excavated from an ancient tomb",
+        "discovered in a meteor crater", "salvaged from a sunken city", "plundered from a warlord's vault",
+        "liberated from a tyrant's grasp", "rescued from a cult's altar", "retrieved from beyond the grave",
+        
+        // Mystical Treatments
+        "dipped in the River Lethe", "washed in the Fountain of Youth", "blessed by three saints",
+        "cursed by seven witches", "anointed with sacred oils", "smeared with sacrificial blood",
+        "inscribed with true names", "marked with destiny's hand", "bound by unbreakable oaths",
+        "sealed with angelic sigils", "locked with demonic pacts", "enchanted by archfey magic",
+        "infused with primordial energy", "imbued with cosmic power", "forged with divine intent"
+    ];
+
+    // Effects (120+ options)
+    const effects = [
+        // Visual Effects
+        "A faint mist surrounds it", "Shadows seem to cling to it", "It distorts the air around it",
+        "It pulses with a slow rhythm", "Tiny sparks dance along its edge", "A pale glow emanates from within",
+        "Strange reflections move across its surface", "It seems to absorb nearby light",
+        "Colors shift across its length", "It appears slightly blurred", "Your eyes slide off its surface",
+        "It's hard to look at directly", "It casts no shadow", "It reflects things that aren't there",
+        
+        // Auditory Effects
+        "Whispers can be heard when holding it", "It hums an eerie tune", "Distant screams echo from it",
+        "It rings like a bell when moved quickly", "It creaks like an old ship", "It moans in the wind",
+        "Chanting can be faintly heard", "It clicks like a clock", "It buzzes like angry insects",
+        "It sighs when at rest", "It groans under pressure", "It laughs at inappropriate times",
+        
+        // Tactile Effects
+        "It's unnaturally cold to the touch", "It's warmer than it should be", "It vibrates slightly",
+        "It tingles in your grip", "It sticks to your skin", "It repels your fingers slightly",
+        "It feels heavier than it looks", "It seems lighter than possible", "It's perfectly balanced",
+        "It moves as if alive", "It resists being sheathed", "It leaps to hand when needed",
+        
+        // Environmental Effects
+        "Nearby flames turn blue", "Candles flicker in its presence", "Metal objects vibrate nearby",
+        "Animals avoid its vicinity", "Plants wilt when it's near", "Water ripples at its approach",
+        "The air smells of ozone around it", "Dust refuses to settle on it", "Shadows deepen around it",
+        "Light bends toward it", "Temperature drops when it's drawn", "Winds pick up when it's used",
+        
+        // Psychological Effects
+        "It fills you with dread", "It inspires unnatural courage", "It whispers of past battles",
+        "It shows you visions of death", "It makes you nostalgic", "It provokes irrational anger",
+        "It induces calm focus", "It makes you reckless", "It sharpens your senses",
+        "It dulls your emotions", "It heightens your aggression", "It makes you paranoid",
+        "It gives you prophetic dreams", "It shows you your death", "It reminds you of home"
+    ];
+
+    // Random selection from each category
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const style = styles[Math.floor(Math.random() * styles.length)];
+    const detail = details[Math.floor(Math.random() * details.length)];
+    const material = materials[Math.floor(Math.random() * materials.length)];
+    const effect = effects[Math.floor(Math.random() * effects.length)];
+    
+    // Rarity-specific prefixes
+    const prefixes = {
+        common: ["A simple", "A well-made", "A practical", "A sturdy", "A serviceable", "A functional"],
+        rare: ["An exceptional", "A finely crafted", "A masterwork", "A superior", "An impressive", "A remarkable"],
+        epic: ["A legendary", "A formidable", "An awe-inspiring", "A terrifying", "A magnificent", "A glorious"],
+        legendary: ["A mythical", "A peerless", "An extraordinary", "A devastating", "An unparalleled", "A supreme"],
+        mythic: ["A godlike", "A primordial", "An unfathomable", "A reality-bending", "A world-changing", "An omnipotent"]
+    };
+    
+    // Construct the description
+    const prefix = prefixes[currentItem.rarity][Math.floor(Math.random() * prefixes[currentItem.rarity].length)];
+    
+    // Multiple description templates
+    const templates = [
+        `${prefix} ${color} ${currentItem.weaponType.toLowerCase()}, ${style} ${detail}. ${material}. ${effect}.`,
+        `${prefix}, ${style} ${currentItem.weaponType.toLowerCase()} with a ${color} finish. ${detail}. ${material}. ${effect}.`,
+        `${material}, this ${style} ${currentItem.weaponType.toLowerCase()} has a ${color} hue. ${detail}. ${effect}.`,
+        `${prefix} ${currentItem.weaponType.toLowerCase()} - ${style} and ${color}, ${detail}. ${material}. ${effect}.`,
+        `Crafted ${material}, this ${color} ${currentItem.weaponType.toLowerCase()} is ${style}. ${detail}. ${effect}.`,
+        `${prefix} ${style} ${currentItem.weaponType.toLowerCase()} in ${color}. ${detail}. ${material}. ${effect}.`
+    ];
+    
+    currentItem.appearancePrompt = templates[Math.floor(Math.random() * templates.length)];
+}
+
+        function updateItemDisplay() {
+            itemNameElement.textContent = currentItem.name;
+            itemDamageElement.textContent = currentItem.damage;
+            appearancePromptElement.textContent = currentItem.appearancePrompt;
+
+            passivesListElement.innerHTML = ''; // limpa a lista
+currentItem.passives.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'passive';
+    // Substitui **texto** por <strong>texto</strong>
+    div.innerHTML = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    passivesListElement.appendChild(div);
+});
+
+            addPassiveBtn.disabled = currentItem.passives.length >= 10;
+            rarityValueElement.textContent = currentItem.rarity;
+        }
+
+        function copyPrompt() {
+            if (!currentItem) return;
+            navigator.clipboard.writeText(currentItem.appearancePrompt)
+                .then(() => alert('Prompt copied!'))
+                .catch(err => console.error('Copy failed:', err));
+        }
+
+        function copyItem() {
+    if (!currentItem) return;
+    
+    const emoji = {
+        common: '🛡️', rare: '✨', epic: '🔥', legendary: '⚡', mythic: '🌌'
+    }[currentItem.rarity];
+    
+    let text = `# ${emoji} ${currentItem.name}\n`;
+    text += `⚔️ Base Damage: ${currentItem.damage}\n`;
+    
+    // Substitui \n por quebras de linha reais em TODAS as passivas
+    currentItem.passives.forEach(p => {
+        const passiveWithLineBreaks = p.replace(/\\n/g, '\n');
+        text += `- ${passiveWithLineBreaks}\n`;
+    });
+    
+    // Também substitui \n no nome e dano se houver
+    text = text.replace(/\\n/g, '\n');
+    
+    navigator.clipboard.writeText(text)
+        .then(() => alert('Item copiado!'))
+        .catch(err => console.error('Falha ao copiar:', err));
+}
+    </script>
+</body>
+</html>
